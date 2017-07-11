@@ -2,8 +2,8 @@
 
 import { MessageHelper } from "./logic/messageHelper";
 
-var actionProvider = {
-    getMenuItems: (context) => {
+const actionProvider: IContributedMenuSource = {
+    getMenuItems: () => {
         return [<IContributedMenuItem>{
             title: "Work Item Menu Action",
             action: (actionContext) => {

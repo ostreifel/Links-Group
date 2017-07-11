@@ -6,6 +6,7 @@ const yargs = require("yargs");
 const exec = require('child_process').exec;
 const rename = require('gulp-rename');
 const sass = require('gulp-sass');
+const tslint = require('gulp-tslint');
 
 const args =  yargs.argv;
 
@@ -17,9 +18,17 @@ const tsProject = ts.createProject('tsconfig.json', {
 gulp.task('clean', () => {
     return gulp.src([jsFolder, '*.vsix'])
         .pipe(clean());
-})
+});
 
-gulp.task('build', ['clean'], () => {
+gulp.task('tslint', () => {
+    return gulp.src(["scripts/**/*ts", "scripts/**/*tsx"])
+        .pipe(tslint({
+            formatter: "verbose"
+        }))
+        .pipe(tslint.report());
+});
+
+gulp.task('build', ['clean', 'tslint'], () => {
     return tsProject.src()
         .pipe(tsProject()).js.pipe(gulp.dest(jsFolder));
 });

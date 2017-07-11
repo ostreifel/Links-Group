@@ -3,7 +3,9 @@
         "module": "amd",
         "sourceMap": false,
         "rootDir": "./scripts",
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
     },
     "filesGlob": [
         "./scripts/**/*.ts",
