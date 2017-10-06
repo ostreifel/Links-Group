@@ -15,7 +15,7 @@
     "office-ui-fabric-react": "^4.5.0",
     "requirejs": "^2.3.2",
     "tslint": "^5.4.3",
-    "typescript": "^2.0.7",
+    "typescript": "^2.3.3",
     "vss-web-extension-sdk": "^2.117.0",
     "webpack": "^2.6.1"
   },
