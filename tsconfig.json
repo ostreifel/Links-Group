@@ -6,13 +6,5 @@
         "moduleResolution": "node",
         "noUnusedLocals": true,
         "noUnusedParameters": true
-    },
-    "filesGlob": [
-        "./scripts/**/*.ts",
-        "!**/*.tests.ts"
-    ],
-    "files": [
-        "scripts/app.ts",
-        "scripts/logic/messageHelper.ts"
-    ]
+    }
 }

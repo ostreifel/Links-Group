@@ -1,7 +1,5 @@
 ///<reference types="vss-web-extension-sdk" />
 
-import { MessageHelper } from "./logic/messageHelper";
-
 const actionProvider: IContributedMenuSource = {
     getMenuItems: () => {
         return [<IContributedMenuItem>{
