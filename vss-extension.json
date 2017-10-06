@@ -1,11 +1,11 @@
 {
     "manifestVersion": 1,
-    "id": "vsts-extension-ts-seed-simple",
+    "id": "auto-task",
     "version": "0.1.12",
-    "name": "VSTS Seed Extension",
+    "name": "Auto Task Group",
     "scopes": [ "vso.work", "vso.work_write" ],
-    "description": "Describe your extension.",
-    "publisher": "your-publisher",
+    "description": "Automate child work item creation",
+    "publisher": "ottostreifel",
     "icons": {
         "default": "img/logo.png"
     },
@@ -15,32 +15,21 @@
         }
     ],
     "tags": [
-        "Sample"
+        "Work Item",
+        "Group",
+        "Automation",
+        "Productivity",
+        "Task",
+        "Child Workitem",
     ],
     "content": {
         "details": {
             "path": "details.md"
         }
     },
-    "links": {
-        "home": {
-            "uri": "https://bit.ly"
-        },
-        "getstarted": {
-            "uri": "https://bit.ly"
-        },
-        "learn": {
-            "uri": "https://bit.ly"
-        },
-        "support": {
-            "uri": "https://bit.ly"
-        },
-        "repository": {
-            "uri": "https://bit.ly"
-        },
-        "issues": {
-            "uri": "https://bit.ly"
-        }
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/ostreifel/Auto-Task"
     },
     "branding": {
         "color": "rgb(220, 235, 252)",
@@ -56,24 +45,24 @@
             "addressable": true
         },
         {
-            "path": "index.html",
+            "path": "taskGroup.html",
             "addressable": true
         }
     ],
     "categories": [
-        "Integrate"
+        "Plan and track"
     ],
     "contributions": [
         {
-            "id": "vsts-extension-ts-seed-simple-action",
-            "type": "ms.vss-web.action-provider",
-            "description": "",
+            "id": "auto-task-group",
+            "type": "ms.vss-work-web.work-item-form-group",
+            "description": "Show tasks associated with the current workitem",
             "targets": [
-                "ms.vss-work-web.work-item-context-menu"
+                "ms.vss-work-web.work-item-form"
             ],
             "properties": {
-                "group": "contributed",
-                "uri": "index.html"
+                "name": "Tasks",
+                "uri": "taskGroup.html"
             }
         }
     ]
