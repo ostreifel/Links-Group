@@ -1,17 +1,11 @@
 {
-	"rules": {
-		"no-unused-expression": true,
-		"no-duplicate-variable": true,
-		"curly": true,
-		"class-name": true,
-		"semicolon": ["always"],
-		"triple-equals": true,
-		"one-line": [true, "check-catch", "check-finally", "check-else"],
-		"indent": [true, "space", 2],
-		"one-variable-per-declaration": true,
-		"no-require-imports": true,
-		"no-var-keyword": true,
-		"no-any": true,
-		"eofline": true
-	}
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        
+    },
+    "rulesDirectory": []
 }
