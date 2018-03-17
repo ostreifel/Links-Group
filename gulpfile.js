@@ -1,12 +1,14 @@
+
 const path = require("path");
 const gulp = require('gulp');
 const ts = require("gulp-typescript");
 const clean = require("gulp-clean");
 const yargs = require("yargs");
-const exec = require('child_process').exec;
+const {execSync, exec} = require('child_process');
 const rename = require('gulp-rename');
 const sass = require('gulp-sass');
 const tslint = require('gulp-tslint');
+const webpack = require('gulp-webpack');
 
 const args =  yargs.argv;
 
@@ -29,8 +31,8 @@ gulp.task('tslint', () => {
 });
 
 gulp.task('build', ['clean', 'tslint'], () => {
-    return tsProject.src()
-        .pipe(tsProject()).js.pipe(gulp.dest(jsFolder));
+    execSync("webpack");
+    // return webpack(require('./webpack.config.js'));
 });
 
 

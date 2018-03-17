@@ -14,6 +14,7 @@
             configureModuleLoader: true
         });
         
+        var require = { paths: { 'office-ui-fabric-react': 'office-ui-fabric-react' } };
         // Load main entry point for extension
         VSS.require(["dist/registerLinkGroup"], function () {
             // Loading succeeded
