@@ -10,32 +10,43 @@ function idFromUrl(url: string): number {
 }
 
 export class LinkGroupEvents implements IWorkItemNotificationListener {
+    private prevLinks: string = "";
     public async onLoaded(workItemLoadedArgs: IWorkItemLoadedArgs): Promise<void> {
         if (!workItemLoadedArgs.isNew) {
+            this.prevLinks = "";
             renderLinks([]);
+            return;
         }
+        this.refreshLinks(true);
+    }
+    public onFieldChanged(/*fieldChangedArgs: IWorkItemFieldChangedArgs*/): void {
+        this.refreshLinks(false);
+    }
+    public onSaved(/*savedEventArgs: IWorkItemChangedArgs*/): void {
+        return;
+    }
+    public onRefreshed(/*refreshEventArgs: IWorkItemChangedArgs*/): void {
+        this.refreshLinks(true);
+    }
+    public onReset(/*undoEventArgs: IWorkItemChangedArgs*/): void {
+        this.refreshLinks(true);
+    }
+    public onUnloaded(/*unloadedEventArgs: IWorkItemChangedArgs*/): void {
+        // throw new Error("Method not implemented.");
+    }
+    private async refreshLinks(force: boolean = false) {
         const service = await WorkItemFormService.getService();
         const relations = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);
         const relMap: {[id: number]: WorkItemRelation} = {};
         for (const rel of relations) {
             relMap[idFromUrl(rel.url)] = rel;
         }
+        const linksKey = Object.keys(relMap).join(",");
+        if (linksKey === this.prevLinks && !force) {
+            return;
+        }
+        this.prevLinks = linksKey;
         const wis = await getClient().getWorkItems(relations.map((rel) => idFromUrl(rel.url)));
         renderLinks(wis.map((wi) => ({wi, link: relMap[wi.id]})));
-    }
-    public onFieldChanged(/*fieldChangedArgs: IWorkItemFieldChangedArgs*/): void {
-        throw new Error("Method not implemented.");
-    }
-    public onSaved(/*savedEventArgs: IWorkItemChangedArgs*/): void {
-        return;
-    }
-    public onRefreshed(/*refreshEventArgs: IWorkItemChangedArgs*/): void {
-        throw new Error("Method not implemented.");
-    }
-    public onReset(/*undoEventArgs: IWorkItemChangedArgs*/): void {
-        throw new Error("Method not implemented.");
-    }
-    public onUnloaded(/*unloadedEventArgs: IWorkItemChangedArgs*/): void {
-        throw new Error("Method not implemented.");
     }
 }

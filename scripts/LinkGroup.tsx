@@ -23,5 +23,5 @@ export interface IWorkItemLink {
 }
 
 export function renderLinks(links: IWorkItemLink[]): void {
-    ReactDOM.render(<Links links={links}/>, document.getElementById("links-container"));
+    ReactDOM.render(<Links links={links}/>, document.getElementById("links-container"), () => VSS.resize());
 }

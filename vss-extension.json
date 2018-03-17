@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1,
     "id": "links-group",
-    "version": "0.1.13",
+    "version": "0.1.18",
     "name": "Link Group",
     "scopes": [ "vso.work", "vso.work_write" ],
     "description": "Update links from the main from page",
@@ -41,7 +41,7 @@
             "addressable": true
         },
         {
-            "path": "scripts",
+            "path": "dist",
             "addressable": true
         },
         {
