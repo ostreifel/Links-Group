@@ -10,8 +10,8 @@
             white-space: nowrap;
             word-wrap: normal;
             font-size: 14px;
-            
-            &.checked {
+            color: black;
+            &.Completed {
                 text-decoration: line-through;
                 color: #999;
             }

@@ -29,13 +29,13 @@ gulp.task('tslint', () => {
         }))
         .pipe(tslint.report());
 });
-gulp.task('styles', () => {
+gulp.task('styles', ['clean', 'tslint'], () => {
     return gulp.src("styles/**/*scss")
         .pipe(sass())
         .pipe(gulp.dest(distFolder));
 });
 
-gulp.task('build', ['clean', 'tslint'], () => {
+gulp.task('build', ['styles'], () => {
     execSync("webpack", {
         stdio: [null, process.stdout, process.stderr]
     });
@@ -43,7 +43,7 @@ gulp.task('build', ['clean', 'tslint'], () => {
 });
 
 
-gulp.task('copy', ['build', 'styles'], () => {
+gulp.task('copy', ['build'], () => {
     gulp.src('node_modules/vss-web-extension-sdk/lib/VSS.SDK.min.js')
         .pipe(gulp.dest(distFolder));
 });
