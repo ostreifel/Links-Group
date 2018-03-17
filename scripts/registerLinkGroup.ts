@@ -1,6 +1,6 @@
 /// <reference types="vss-web-extension-sdk" />
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
-import { TaskListener } from "./TaskListener";
+import { LinkGroupEvents } from "./LinkGroupEvents";
 
 // save on ctr + s
 $(window).bind("keydown", (event: JQueryEventObject) => {
@@ -13,4 +13,4 @@ $(window).bind("keydown", (event: JQueryEventObject) => {
 });
 
 // Register context menu action provider
-VSS.register(VSS.getContribution().id, new TaskListener());
+VSS.register(VSS.getContribution().id, new LinkGroupEvents());

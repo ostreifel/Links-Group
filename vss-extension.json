@@ -1,10 +1,10 @@
 {
     "manifestVersion": 1,
-    "id": "auto-task",
+    "id": "links-group",
     "version": "0.1.12",
-    "name": "Auto Task Group",
+    "name": "Link Group",
     "scopes": [ "vso.work", "vso.work_write" ],
-    "description": "Automate child work item creation",
+    "description": "Update links from the main from page",
     "publisher": "ottostreifel",
     "icons": {
         "default": "img/logo.png"
@@ -17,10 +17,10 @@
     "tags": [
         "Work Item",
         "Group",
-        "Automation",
         "Productivity",
-        "Task",
-        "Child Workitem",
+        "Link",
+        "Child",
+        "Related"
     ],
     "content": {
         "details": {
@@ -45,7 +45,7 @@
             "addressable": true
         },
         {
-            "path": "taskGroup.html",
+            "path": "linkGroup.html",
             "addressable": true
         }
     ],
@@ -54,15 +54,15 @@
     ],
     "contributions": [
         {
-            "id": "auto-task-group",
+            "id": "link-group",
             "type": "ms.vss-work-web.work-item-form-group",
-            "description": "Show tasks associated with the current workitem",
+            "description": "Show links associated with the current workitem",
             "targets": [
                 "ms.vss-work-web.work-item-form"
             ],
             "properties": {
-                "name": "Tasks",
-                "uri": "taskGroup.html"
+                "name": "Links",
+                "uri": "linkGroup.html"
             }
         }
     ]
