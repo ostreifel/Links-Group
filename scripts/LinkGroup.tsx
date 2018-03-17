@@ -1,11 +1,19 @@
+import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { WorkItem, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
+import { updateWiState } from "./linksManager";
 
 class Link extends React.Component<{link: IWorkItemLink}, {}> {
     public render() {
         const {wi} = this.props.link;
-        return <div>{wi.fields["System.Title"]}</div>;
+        return <div>
+            <Checkbox
+                onChange={ () => updateWiState(wi, "Completed") }
+                ariaLabel="Completed"
+            />
+            {wi.fields["System.Title"]}
+        </div>;
     }
 }
 
