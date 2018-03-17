@@ -7,15 +7,15 @@ import { projField, stateField, witField } from "./fieldConstants";
 import { renderLinks } from "./LinkGroupView";
 
 let prevLinks: string = "";
+let rels: WorkItemRelation[] = [];
+let wis: {[id: number]: WorkItem} = {};
 
 function idFromUrl(url: string): number {
     const match = url.match(/\d+$/);
     return match ? Number(match[0]) : -1;
 }
 
-let updateCounter = 0;
 export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
-    const start = ++updateCounter;
     const {
         [projField]: project,
         [witField]: witName,
@@ -27,12 +27,9 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
             value: await getState(project, witName, metaState),
         } as JsonPatchOperation,
     ];
-    await getClient().updateWorkItem(patch, workitem.id);
-    const service = await WorkItemFormService.getService();
-    if (start !== updateCounter) {
-        return;
-    }
-    service.refresh();
+    const wi = await getClient().updateWorkItem(patch, workitem.id);
+    wis[wi.id] = wi;
+    update();
 }
 
 export async function refreshLinksForNewWi() {
@@ -40,31 +37,38 @@ export async function refreshLinksForNewWi() {
     renderLinks([]);
 }
 
+async function update() {
+    const links = await Promise.all(rels.map(async (rel) => {
+        const wi = wis[idFromUrl(rel.url)];
+        return {
+            wi,
+            link: rel,
+            metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
+        };
+    }));
+    renderLinks(links);
+}
+
 let refreshCounter = 0;
 export async function refreshLinks(force: boolean = false) {
     const start = ++refreshCounter;
     const service = await WorkItemFormService.getService();
-    const relations = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);
-    const relMap: {[id: number]: WorkItemRelation} = {};
-    for (const rel of relations) {
-        relMap[idFromUrl(rel.url)] = rel;
+    rels = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);
+    if (start !== refreshCounter) {
+        return;
     }
-    const linksKey = Object.keys(relMap).join(",");
+    const linksKey = rels.map((r) => r.url).join(",");
     if (linksKey === prevLinks && !force) {
         return;
     }
-    if (start !== refreshCounter) {
-        return;
-    }
     prevLinks = linksKey;
-    const wis = await getClient().getWorkItems(relations.map((rel) => idFromUrl(rel.url)));
-    const links = await Promise.all(wis.map(async (wi) => ({
-        wi,
-        link: relMap[wi.id],
-        metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
-    })));
+    const wiArr = await getClient().getWorkItems(rels.map((rel) => idFromUrl(rel.url)));
     if (start !== refreshCounter) {
         return;
     }
-    renderLinks(links);
+    wis = {};
+    for (const wi of wiArr) {
+        wis[wi.id] = wi;
+    }
+    await update();
 }
