@@ -10,7 +10,9 @@ export function getConfiguration(project: string): IPromise<BacklogConfiguration
     return backlogs[project];
 }
 
-export async function getState(project: string, witName: string, metaState: "Proposed" | "Completed"): Promise<string> {
+export type MetaState = "Completed" | "Proposed";
+
+export async function getState(project: string, witName: string, metaState: MetaState): Promise<string> {
     const config = await getConfiguration(project);
     const [{states}] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
     for (const state in states) {
@@ -19,4 +21,10 @@ export async function getState(project: string, witName: string, metaState: "Pro
         }
     }
     throw new Error(`Could not find state for ${project}, ${witName}, ${metaState}`);
+}
+
+export async function getMetaState(project: string, witName: string, state: string): Promise<MetaState> {
+    const config = await getConfiguration(project);
+    const [{states}] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
+    return states[state] as MetaState;
 }

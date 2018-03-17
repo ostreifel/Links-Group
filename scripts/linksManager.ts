@@ -2,9 +2,9 @@ import { WorkItem, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
 import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
-import { getState } from "./backlogConfiguration";
+import { getMetaState, getState, MetaState } from "./backlogConfiguration";
 import { projField, stateField, witField } from "./fieldConstants";
-import { renderLinks } from "./LinkGroup";
+import { renderLinks } from "./LinkGroupView";
 
 let prevLinks: string = "";
 
@@ -13,7 +13,7 @@ function idFromUrl(url: string): number {
     return match ? Number(match[0]) : -1;
 }
 
-export async function updateWiState(workitem: WorkItem, metaState: "Proposed" | "Completed") {
+export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
     const {
         [projField]: project,
         [witField]: witName,
@@ -46,5 +46,9 @@ export async function refreshLinks(force: boolean = false) {
     }
     prevLinks = linksKey;
     const wis = await getClient().getWorkItems(relations.map((rel) => idFromUrl(rel.url)));
-    renderLinks(wis.map((wi) => ({wi, link: relMap[wi.id]})));
+    renderLinks(await Promise.all(wis.map(async (wi) => ({
+        wi,
+        link: relMap[wi.id],
+        metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
+    }))));
 }

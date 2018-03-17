@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <script src="dist/VSS.SDK.min.js"></script>
+    <link href="dist/linkGroup.css" rel="stylesheet" />
 </head>
 <body>
     <script type="text/javascript">
@@ -14,7 +15,6 @@
             configureModuleLoader: true
         });
         
-        var require = { paths: { 'office-ui-fabric-react': 'office-ui-fabric-react' } };
         // Load main entry point for extension
         VSS.require(["dist/registerLinkGroup"], function () {
             // Loading succeeded
