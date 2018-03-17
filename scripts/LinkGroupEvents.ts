@@ -1,29 +1,29 @@
-import { WorkItemType, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
-import { IWorkItemFieldChangedArgs, IWorkItemNotificationListener, IWorkItemLoadedArgs } from "TFS/WorkItemTracking/ExtensionContracts";
+import { WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
+import { IWorkItemLoadedArgs, IWorkItemNotificationListener } from "TFS/WorkItemTracking/ExtensionContracts";
 import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
-import { CachedValue } from "./cachedValue";
-import { getListItemTexts } from "./htmlParser";
-import * as Q from "q";
-import { getWit } from "./workItemTypes";
+import { renderLinks } from "./LinkGroup";
 
-const projectField = "System.TeamProject";
-const witField = "System.WorkItemType";
-
-
-interface IAssociatedWorkItemTypes {
-    currentType: WorkItemType;
-    childType: string;
+function idFromUrl(url: string): number {
+    const match = url.match(/\d+$/);
+    return match ? Number(match[0]) : -1;
 }
 
 export class LinkGroupEvents implements IWorkItemNotificationListener {
-    public onLoaded(workItemLoadedArgs: IWorkItemLoadedArgs): void {
-        WorkItemFormService.getService().then(service => {
-            service.getWorkItemRelations
-        });
-        throw new Error("Method not implemented.");
+    public async onLoaded(workItemLoadedArgs: IWorkItemLoadedArgs): Promise<void> {
+        if (!workItemLoadedArgs.isNew) {
+            renderLinks([]);
+        }
+        const service = await WorkItemFormService.getService();
+        const relations = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);
+        const relMap: {[id: number]: WorkItemRelation} = {};
+        for (const rel of relations) {
+            relMap[idFromUrl(rel.url)] = rel;
+        }
+        const wis = await getClient().getWorkItems(relations.map((rel) => idFromUrl(rel.url)));
+        renderLinks(wis.map((wi) => ({wi, link: relMap[wi.id]})));
     }
-    public onFieldChanged(fieldChangedArgs: IWorkItemFieldChangedArgs): void {
+    public onFieldChanged(/*fieldChangedArgs: IWorkItemFieldChangedArgs*/): void {
         throw new Error("Method not implemented.");
     }
     public onSaved(/*savedEventArgs: IWorkItemChangedArgs*/): void {
@@ -37,12 +37,5 @@ export class LinkGroupEvents implements IWorkItemNotificationListener {
     }
     public onUnloaded(/*unloadedEventArgs: IWorkItemChangedArgs*/): void {
         throw new Error("Method not implemented.");
-    }
-    private _getWorkItemType(): Q.IPromise<WorkItemType> {
-        return WorkItemFormService.getService().then((service) =>
-            service.getFieldValues([witField, projectField]).then(
-                ({[projectField]: project, [witField]: wit}) => getWit(project, wit)
-            ),
-        );
     }
 }

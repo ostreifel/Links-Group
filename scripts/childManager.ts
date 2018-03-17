@@ -22,7 +22,7 @@
 //         rel = {
 //             attributes: {},
 //             rel: childLinkType,
-            
+
 //         }
 //         this.title = title;
 //     }
@@ -40,7 +40,7 @@
 // }
 
 // export class ChildManager {
-    
+
 //     private _getChildIds(): Q.IPromise<ChildWorkItem[]> {
 //         return WorkItemFormService.getService().then((wiservice) =>
 //             wiservice.getWorkItemRelations().then((relations): number[] =>

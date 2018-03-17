@@ -19,7 +19,7 @@
     "vss-web-extension-sdk": "^2.117.0",
     "webpack": "^2.6.1"
   },
-  "name": "vsts-extension-ts-seed-simple",
+  "name": "task-group",
   "private": true,
   "version": "0.7.0"
 }

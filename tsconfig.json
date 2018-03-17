@@ -5,6 +5,12 @@
         "rootDir": "./scripts",
         "moduleResolution": "node",
         "noUnusedLocals": true,
-        "noUnusedParameters": true
+        "noUnusedParameters": true,
+        "jsx": "react",
+        "lib": [
+            "es2015.promise",
+            "dom",
+            "es5"
+        ]
     }
 }
