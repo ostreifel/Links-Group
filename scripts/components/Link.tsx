@@ -1,9 +1,10 @@
+import { IconButton } from "office-ui-fabric-react/lib/Button";
 import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import { autobind } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
-import { updateWiState } from "../linksManager";
+import { deleteWi, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
 
 export class Link extends React.Component<{link: IWorkItemLink}, {}> {
@@ -36,6 +37,31 @@ export class Link extends React.Component<{link: IWorkItemLink}, {}> {
             >
                 {wi.fields["System.Title"]}
             </a>
+            <IconButton
+                iconProps={ {
+                    iconName: "More",
+                    title: "More Options",
+                } }
+                tabIndex={-1}
+                data-is-focusable={false}
+                split={false}
+                className="link-options"
+                menuProps={{
+                    items: [
+                        {
+                            key: "Delete",
+                            icon: "Delete",
+                            name: "Delete",
+                            onClick: (e) => {
+                                deleteWi(wi);
+                                e.preventDefault();
+                                e.stopPropagation();
+                            },
+                        },
+                    ],
+                    isBeakVisible: false,
+                }}
+            />
         </div>;
     }
     private _getLink() {
@@ -56,13 +82,17 @@ export class Link extends React.Component<{link: IWorkItemLink}, {}> {
 
     @autobind
     private _onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-        const { navService } = this.props.link;
+        const { navService, wi } = this.props.link;
         if (e.keyCode === KeyCode.ENTER) {
             navService.openNewWindow(this._getLink(), "");
             e.preventDefault();
             e.stopPropagation();
         } else if (e.keyCode === KeyCode.SPACE) {
             this._toggleWiState();
+        } else if (e.keyCode === KeyCode.DELETE) {
+            deleteWi(wi);
+            e.preventDefault();
+            e.stopPropagation();
         }
     }
 }

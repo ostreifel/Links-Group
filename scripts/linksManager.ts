@@ -39,6 +39,15 @@ export async function refreshLinksForNewWi() {
     renderLinks([]);
 }
 
+export async function deleteWi(wi: WorkItem) {
+    await getClient().deleteWorkItem(wi.id);
+    delete wis[wi.id];
+
+    const idx = rels.map(({url}) => idFromUrl(url)).indexOf(wi.id);
+    rels.splice(idx, 1);
+    update();
+}
+
 export async function createChildWi(childTitle: string) {
     const service = await WorkItemFormService.getService();
     const {[projField]: project, [witField]: wit } = await service.getFieldValues([witField, projField]);

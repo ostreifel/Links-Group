@@ -49,6 +49,12 @@
                 color: #999;
             }
         }
+        &:not(:hover) .link-options {
+            visibility: hidden;
+        }
+        .link-options .ms-Button-menuIcon {
+            display: none;
+        }
     }
     .add-button {
         margin-top: 2px;
