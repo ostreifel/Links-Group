@@ -1,4 +1,14 @@
+.link, .add-button
+{
+    &:focus {
+        background-color: aliceblue;
+    }
+    &:hover {
+        outline: 1px solid black;
+    }
+}
 #links-container {
+    margin: 1px;
     .links .link {
         display: flex;
         align-items: center;

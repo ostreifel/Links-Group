@@ -21,12 +21,14 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
                 iconProps={ {
                     iconName: "Add",
                     title: "Add child work item",
-                    onClick: () => this.setState({addingChild: true}),
                 } }
+                onClick={() => this.setState({addingChild: true})}
+                className="add-button"
                 autoFocus={focusButton}
             />;
         }
         return <TextField
+            className="add-title"
             placeholder="Enter workitem title"
             onKeyDown={this._keyDown}
             onBlur={() => this.setState({addingChild: false, focusButton: true})}
