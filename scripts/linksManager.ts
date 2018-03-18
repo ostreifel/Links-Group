@@ -31,7 +31,7 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
     ];
     const wi = await getClient().updateWorkItem(patch, workitem.id);
     wis[wi.id] = wi;
-    update();
+    await update();
 }
 
 export async function refreshLinksForNewWi() {
@@ -45,7 +45,7 @@ export async function deleteWi(wi: WorkItem) {
 
     const idx = rels.map(({url}) => idFromUrl(url)).indexOf(wi.id);
     rels.splice(idx, 1);
-    update();
+    await update();
 }
 
 export async function createChildWi(childTitle: string) {
@@ -73,7 +73,20 @@ export async function createChildWi(childTitle: string) {
     const child = await getClient().createWorkItem(patch, project, childWit);
     rels.push({url: child.url} as WorkItemRelation);
     wis[child.id] = child;
-    update();
+    await update();
+}
+
+export async function renameChild(child: WorkItem, title: string) {
+    const patch: JsonPatchDocument & JsonPatchOperation[] = [
+        {
+            op: Operation.Add,
+            path: `/fields/${titleField}`,
+            value: title,
+        } as JsonPatchOperation,
+    ];
+    const updated = await getClient().updateWorkItem(patch, child.id);
+    wis[updated.id] = updated;
+    await update();
 }
 
 async function update() {
