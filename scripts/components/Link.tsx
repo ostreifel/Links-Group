@@ -6,7 +6,7 @@ import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
 import { titleField } from "../fieldConstants";
-import { deleteWi, renameChild, updateWiState } from "../linksManager";
+import { deleteWi, renameChild, unlink, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
 
 interface ILinkState {
@@ -75,12 +75,30 @@ export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
                     items: [
                         {
                             key: "Delete",
-                            icon: "Delete",
+                            icon: "Cancel",
                             name: "Delete",
                             onClick: (e) => {
                                 deleteWi(wi);
                                 e.preventDefault();
                                 e.stopPropagation();
+                            },
+                        },
+                        {
+                            key: "Delete",
+                            icon: "RemoveLink",
+                            name: "Unlink",
+                            onClick: (e) => {
+                                unlink(this.props.link);
+                                e.stopPropagation();
+                                e.preventDefault();
+                            },
+                        },
+                        {
+                            key: "Rename",
+                            icon: "Rename",
+                            name: "Rename",
+                            onClick: () => {
+                                this.setState({editingTitle: true});
                             },
                         },
                     ],

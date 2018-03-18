@@ -45,7 +45,9 @@ export async function deleteWi(wi: WorkItem) {
 
     const idx = rels.map(({url}) => idFromUrl(url)).indexOf(wi.id);
     rels.splice(idx, 1);
-    await update();
+    // await update();
+    const service = await WorkItemFormService.getService();
+    await service.refresh();
 }
 
 export async function createChildWi(childTitle: string) {
@@ -74,6 +76,7 @@ export async function createChildWi(childTitle: string) {
     rels.push({url: child.url} as WorkItemRelation);
     wis[child.id] = child;
     await update();
+    // await service.refresh();
 }
 
 export async function renameChild(child: WorkItem, title: string) {
@@ -87,6 +90,11 @@ export async function renameChild(child: WorkItem, title: string) {
     const updated = await getClient().updateWorkItem(patch, child.id);
     wis[updated.id] = updated;
     await update();
+}
+
+export async function unlink(link: IWorkItemLink) {
+    const service = await WorkItemFormService.getService();
+    service.removeWorkItemRelations([link.link]);
 }
 
 async function update() {

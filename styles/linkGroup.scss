@@ -53,6 +53,7 @@
         }
         .link-edit {
             margin: 0px;
+            flex: 1;
         }
         &:not(:hover) .link-options {
             visibility: hidden;
