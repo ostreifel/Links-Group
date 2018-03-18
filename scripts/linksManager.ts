@@ -96,7 +96,7 @@ export async function refreshLinks(force: boolean = false) {
         return;
     }
     prevLinks = linksKey;
-    const wiArr = await getClient().getWorkItems(rels.map((rel) => idFromUrl(rel.url)));
+    const wiArr = rels.length > 0 ? await getClient().getWorkItems(rels.map((rel) => idFromUrl(rel.url))) : [];
     if (start !== refreshCounter) {
         return;
     }
