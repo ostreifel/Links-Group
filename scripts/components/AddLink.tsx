@@ -1,4 +1,4 @@
-import { IconButton } from "office-ui-fabric-react/lib/Button";
+import { ActionButton    } from "office-ui-fabric-react/lib/Button";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
 import { autobind } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
@@ -18,19 +18,19 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
     public render() {
         const { addingChild, focusButton } = this.state;
         if (!addingChild) {
-            return <IconButton
+            return <ActionButton
+                onClick={() => this.setState({addingChild: true})}
+                className="add-button"
+                autoFocus={focusButton}
                 iconProps={ {
                     iconName: "Add",
                     title: "Add child work item",
                 } }
-                onClick={() => this.setState({addingChild: true})}
-                className="add-button"
-                autoFocus={focusButton}
-            />;
+            >Add Child</ActionButton>;
         }
         return <TextField
             className="add-title"
-            placeholder="Enter workitem title"
+            placeholder="Enter title"
             onKeyDown={this._keyDown}
             onBlur={this._onBlur}
             autoFocus={true}
