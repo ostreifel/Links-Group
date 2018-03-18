@@ -3,6 +3,7 @@ import { TextField } from "office-ui-fabric-react/lib/TextField";
 import { autobind } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
+import { createChildWi } from "../linksManager";
 
 interface IAddLinkState {
     addingChild?: boolean;
@@ -31,14 +32,25 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
             className="add-title"
             placeholder="Enter workitem title"
             onKeyDown={this._keyDown}
-            onBlur={() => this.setState({addingChild: false, focusButton: true})}
+            onBlur={this._onBlur}
             autoFocus={true}
         />;
     }
 
     @autobind
-    public _keyDown(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    private async _onBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+        if (e.currentTarget.value) {
+            await createChildWi(e.currentTarget.value);
+        }
+        this.setState({addingChild: false, focusButton: true});
+    }
+
+    @autobind
+    private async _keyDown(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) {
         if (e.keyCode === KeyCode.ESCAPE) {
+            this.setState({addingChild: false, focusButton: true});
+        } else if (e.keyCode === KeyCode.ENTER) {
+            await createChildWi(e.currentTarget.value);
             this.setState({addingChild: false, focusButton: true});
         }
     }

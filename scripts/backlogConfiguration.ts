@@ -28,3 +28,18 @@ export async function getMetaState(project: string, witName: string, state: stri
     const [{states}] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
     return states[state] as MetaState;
 }
+
+export async function getChildWit(project: string, witName: string): Promise<string> {
+    const config = await getConfiguration(project);
+    const levels = [config.requirementBacklog, config.taskBacklog, ...config.portfolioBacklogs];
+    levels.sort((a, b) => b.rank - a.rank);
+
+    const [{rank}] = levels.filter((lvl) => lvl.workItemTypes.filter(({name}) => name === witName).length > 0);
+    for (const level of levels) {
+        if (level.rank < rank) {
+            return level.defaultWorkItemType.name;
+        }
+    }
+    // Default child to bottom type in the case when in the bottom backlog (ex: task)
+    return levels[levels.length].defaultWorkItemType.name;
+}

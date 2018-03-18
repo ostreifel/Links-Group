@@ -3,10 +3,10 @@ import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
-import { getMetaState, getState, MetaState } from "./backlogConfiguration";
+import { getChildWit, getMetaState, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks } from "./components/showLinks";
-import { projField, stateField, witField } from "./fieldConstants";
+import { projField, stateField, titleField, witField } from "./fieldConstants";
 
 let prevLinks: string = "";
 let rels: WorkItemRelation[] = [];
@@ -37,6 +37,27 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
 export async function refreshLinksForNewWi() {
     prevLinks = "";
     renderLinks([]);
+}
+
+export async function createChildWi(childTitle: string) {
+    const service = await WorkItemFormService.getService();
+    const {[projField]: project, [witField]: wit } = await service.getFieldValues([witField, projField]);
+    const childWit = await getChildWit(project, wit);
+    const patch: JsonPatchDocument & JsonPatchOperation[] = [
+        {
+            op: Operation.Add,
+            path: `/fields/${titleField}`,
+            value: childTitle,
+        } as JsonPatchOperation,
+    ];
+    const child = await getClient().createWorkItem(patch, project, childWit);
+    service.addWorkItemRelations([{
+        rel: "System.LinkTypes.Hierarchy-Forward",
+        attributes: {
+            comment: "Created from the Links Group extension",
+        },
+        url: child.url,
+    }]);
 }
 
 async function update() {
