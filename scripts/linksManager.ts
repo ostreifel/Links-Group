@@ -58,15 +58,22 @@ export async function createChildWi(childTitle: string) {
             path: `/fields/${titleField}`,
             value: childTitle,
         } as JsonPatchOperation,
+        {
+            op: Operation.Add,
+            path: "/relations/-",
+            value: {
+                rel: "System.LinkTypes.Hierarchy-Reverse",
+                url: await service.getWorkItemResourceUrl(await service.getId()),
+                attributes: {
+                    comment: "Created from the Links Group extension",
+                },
+            },
+        } as JsonPatchOperation,
     ];
     const child = await getClient().createWorkItem(patch, project, childWit);
-    service.addWorkItemRelations([{
-        rel: "System.LinkTypes.Hierarchy-Forward",
-        attributes: {
-            comment: "Created from the Links Group extension",
-        },
-        url: child.url,
-    }]);
+    rels.push({url: child.url} as WorkItemRelation);
+    wis[child.id] = child;
+    update();
 }
 
 async function update() {
