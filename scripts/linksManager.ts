@@ -1,10 +1,12 @@
 import { WorkItem, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
 import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
+import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
 import { getMetaState, getState, MetaState } from "./backlogConfiguration";
+import { IWorkItemLink } from "./components/IWorkItemLink";
+import { renderLinks } from "./components/showLinks";
 import { projField, stateField, witField } from "./fieldConstants";
-import { renderLinks } from "./LinkGroupView";
 
 let prevLinks: string = "";
 let rels: WorkItemRelation[] = [];
@@ -38,12 +40,14 @@ export async function refreshLinksForNewWi() {
 }
 
 async function update() {
-    const links = await Promise.all(rels.map(async (rel) => {
+    const navService = await VSS.getService<HostNavigationService>(VSS.ServiceIds.Navigation);
+    const links: IWorkItemLink[] = await Promise.all(rels.map(async (rel): Promise<IWorkItemLink> => {
         const wi = wis[idFromUrl(rel.url)];
         return {
             wi,
             link: rel,
             metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
+            navService,
         };
     }));
     renderLinks(links);

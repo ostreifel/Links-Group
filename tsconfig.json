@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "module": "amd",
+        "target": "es5",
         "sourceMap": false,
         "rootDir": "./scripts",
         "moduleResolution": "node",
@@ -11,6 +12,7 @@
             "es2015.promise",
             "dom",
             "es5"
-        ]
+        ],
+        "experimentalDecorators": true
     }
 }
