@@ -118,7 +118,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
     }
     public componentDidUpdate(_, prevState) {
         if (
-            this.props.selected === this.props.link.wi.id ||
+            (this.props.selected === this.props.link.wi.id && !this.state.editingTitle) ||
             (prevState.editingTitle && !this.state.editingTitle)
         ) {
             this.linkRef.focus();
