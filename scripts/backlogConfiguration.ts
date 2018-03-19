@@ -43,3 +43,8 @@ export async function getChildWit(project: string, witName: string): Promise<str
     // Default child to bottom type in the case when in the bottom backlog (ex: task)
     return levels[levels.length].defaultWorkItemType.name;
 }
+
+export async function getOrderFieldName(project: string): Promise<string> {
+    const config = await getConfiguration(project);
+    return config.backlogFields.typeFields.Order;
+}

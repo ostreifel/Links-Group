@@ -3,7 +3,7 @@ import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
-import { getChildWit, getMetaState, getState, MetaState } from "./backlogConfiguration";
+import { getChildWit, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks } from "./components/showLinks";
 import { projField, stateField, titleField, witField } from "./fieldConstants";
@@ -108,7 +108,27 @@ async function update() {
             navService,
         };
     }));
+    const formService = await WorkItemFormService.getService();
+    const project = await formService.getFieldValue(projField) as string;
+    links.sort(await getRelationComparer(project));
     renderLinks(links);
+}
+
+async function getRelationComparer(project: string) {
+    const field = await getOrderFieldName(project);
+    return (a: IWorkItemLink, b: IWorkItemLink) => {
+        const v1 = a.wi.fields[field];
+        const v2 = b.wi.fields[field];
+        if (v1 && v2) {
+            return v1 - v2;
+        } else if (v1) {
+            return -1;
+        } else if (v2) {
+            return 1;
+        } else {
+            return a.wi.id - b.wi.id;
+        }
+    };
 }
 
 let refreshCounter = 0;
