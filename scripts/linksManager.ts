@@ -3,10 +3,10 @@ import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
-import { getChildWit, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
+import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks } from "./components/showLinks";
-import { projField, stateField, titleField, witField } from "./fieldConstants";
+import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
 
 let prevLinks: string = "";
 let rels: WorkItemRelation[] = [];
@@ -52,13 +52,45 @@ export async function deleteWi(wi: WorkItem) {
 
 export async function createChildWi(childTitle: string) {
     const service = await WorkItemFormService.getService();
-    const {[projField]: project, [witField]: wit } = await service.getFieldValues([witField, projField]);
-    const childWit = await getChildWit(project, wit);
+    const {
+        [witField]: wit,
+        [projField]: project,
+        [areaField]: area,
+        [iterationField]: iteration,
+    } = await service.getFieldValues([
+        witField,
+        projField,
+        areaField,
+        iterationField,
+    ]);
+    const orderField = await getOrderFieldName(project);
+    const parentRank = await service.getFieldValue(orderField) as number;
+    const childWitName = await getChildWitName(project, wit);
+    const ranks = [parentRank];
+    for (const id in wis) {
+        ranks.push(wis[id].fields[orderField] as number);
+    }
+    ranks.sort((a, b) => b - a); // largest first
     const patch: JsonPatchDocument & JsonPatchOperation[] = [
         {
             op: Operation.Add,
             path: `/fields/${titleField}`,
             value: childTitle,
+        } as JsonPatchOperation,
+        {
+            op: Operation.Add,
+            path: `/fields/${areaField}`,
+            value: area,
+        } as JsonPatchOperation,
+        {
+            op: Operation.Add,
+            path: `/fields/${iterationField}`,
+            value: iteration,
+        } as JsonPatchOperation,
+        {
+            op: Operation.Add,
+            path: `/fields/${orderField}`,
+            value: ranks[0] + 1,
         } as JsonPatchOperation,
         {
             op: Operation.Add,
@@ -72,7 +104,7 @@ export async function createChildWi(childTitle: string) {
             },
         } as JsonPatchOperation,
     ];
-    const child = await getClient().createWorkItem(patch, project, childWit);
+    const child = await getClient().createWorkItem(patch, project, childWitName);
     rels.push({url: child.url} as WorkItemRelation);
     wis[child.id] = child;
     await update();

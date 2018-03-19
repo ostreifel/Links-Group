@@ -36,7 +36,6 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
             autoFocus={true}
         />;
     }
-
     @autobind
     private async _onBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
         if (e.currentTarget.value) {

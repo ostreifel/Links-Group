@@ -29,10 +29,10 @@ module.exports = {
         { test: /\.tsx?$/, loader: "ts-loader" }
       ]
     },
-    // plugins: [
-    //     new webpack.optimize.UglifyJsPlugin({
-    //         compress: false,
-    //         mangle: false,
-    //     }),
-    // ]    
+    plugins: [
+        new webpack.optimize.UglifyJsPlugin({
+            compress: false,
+            mangle: false,
+        }),
+    ]    
 };
