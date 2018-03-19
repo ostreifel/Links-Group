@@ -2,7 +2,6 @@ const webpack = require('webpack');
 const path = require("path");
 
 module.exports = {
-    mode: "production",
     entry: {
         registerLinkGroup: "./scripts/registerLinkGroup.ts",
     },
@@ -29,10 +28,4 @@ module.exports = {
         { test: /\.tsx?$/, loader: "ts-loader" }
       ]
     },
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            compress: false,
-            mangle: false,
-        }),
-    ]    
 };

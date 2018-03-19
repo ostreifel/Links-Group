@@ -11,6 +11,7 @@ import { areaField, iterationField, projField, stateField, titleField, witField 
 let prevLinks: string = "";
 let rels: WorkItemRelation[] = [];
 let wis: {[id: number]: WorkItem} = {};
+let selected = -1;
 
 function idFromUrl(url: string): number {
     const match = url.match(/\d+$/);
@@ -31,12 +32,13 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
     ];
     const wi = await getClient().updateWorkItem(patch, workitem.id);
     wis[wi.id] = wi;
+    selected = wi.id;
     await update();
 }
 
 export async function refreshLinksForNewWi() {
     prevLinks = "";
-    renderLinks([]);
+    renderLinks({links: [], selected});
 }
 
 export async function deleteWi(wi: WorkItem) {
@@ -48,6 +50,56 @@ export async function deleteWi(wi: WorkItem) {
     // await update();
     const service = await WorkItemFormService.getService();
     await service.refresh();
+}
+
+export async function moveChild(link: IWorkItemLink, dir: "up" | "down") {
+    const service = await WorkItemFormService.getService();
+    const project = await service.getFieldValue(projField) as string;
+    const orderField = await getOrderFieldName(project);
+    const orderedWis: WorkItem[] = [];
+    for (const id in wis) {
+        orderedWis.push(wis[id]);
+    }
+    orderedWis.sort((a, b) => a.fields[orderField] - b.fields[orderField]);
+    if (orderedWis.length === 0) {
+        return;
+    }
+    const currRank = link.wi.fields[orderField] as number;
+    const currIdx = orderedWis.map(({id}) => id).indexOf(link.wi.id);
+
+    let otherRank: number;
+    let otherId: number;
+    if (dir === "up") {
+        if (currIdx === 0) { return; }
+        otherRank = orderedWis[currIdx - 1].fields[orderField];
+        otherId = orderedWis[currIdx - 1].id;
+    } else if (dir === "down") {
+        if (currIdx === orderedWis.length - 1) { return; }
+        otherRank = orderedWis[currIdx + 1].fields[orderField];
+        otherId = orderedWis[currIdx + 1].id;
+    }
+    const currPatch: JsonPatchDocument & JsonPatchOperation[] = [
+        {
+            op: Operation.Add,
+            path: `/fields/${orderField}`,
+            value: otherRank,
+        } as JsonPatchOperation,
+    ];
+    const otherPatch: JsonPatchDocument & JsonPatchOperation[] = [
+        {
+            op: Operation.Add,
+            path: `/fields/${orderField}`,
+            value: currRank,
+        } as JsonPatchOperation,
+    ];
+    const [currUpdate, otherUpdate] = await Promise.all([
+        getClient().updateWorkItem(currPatch, link.wi.id),
+        getClient().updateWorkItem(otherPatch, otherId),
+    ]);
+    selected = currUpdate.id;
+    wis[currUpdate.id] = currUpdate;
+    wis[otherUpdate.id] = otherUpdate;
+    await update();
 }
 
 export async function createChildWi(childTitle: string) {
@@ -107,8 +159,14 @@ export async function createChildWi(childTitle: string) {
     const child = await getClient().createWorkItem(patch, project, childWitName);
     rels.push({url: child.url} as WorkItemRelation);
     wis[child.id] = child;
+    selected = child.id;
     await update();
     // await service.refresh();
+}
+
+export async function selectWi(id: number) {
+    selected = id;
+    await update();
 }
 
 export async function renameChild(child: WorkItem, title: string) {
@@ -121,6 +179,7 @@ export async function renameChild(child: WorkItem, title: string) {
     ];
     const updated = await getClient().updateWorkItem(patch, child.id);
     wis[updated.id] = updated;
+    selected = updated.id;
     await update();
 }
 
@@ -143,7 +202,7 @@ async function update() {
     const formService = await WorkItemFormService.getService();
     const project = await formService.getFieldValue(projField) as string;
     links.sort(await getRelationComparer(project));
-    renderLinks(links);
+    await renderLinks({links, selected});
 }
 
 async function getRelationComparer(project: string) {

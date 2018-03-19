@@ -38,22 +38,24 @@
         .checkbox {
             margin: 0px 5px;
         }
-        .link-label {
+        .label-container {
             flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            word-wrap: normal;
-            font-size: 14px;
-            color: black;
-            &.Completed {
-                text-decoration: line-through;
-                color: #999;
+            .link-label {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                word-wrap: normal;
+                font-size: 14px;
+                color: black;
+                &.Completed {
+                    text-decoration: line-through;
+                    color: #999;
+                }
             }
-        }
-        .link-edit {
-            margin: 0px;
-            flex: 1;
+            .link-edit {
+                width: 100%;
+                margin: 0px;
+            }
         }
         &:not(:hover) .link-options {
             visibility: hidden;

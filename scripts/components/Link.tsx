@@ -6,14 +6,19 @@ import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
 import { titleField } from "../fieldConstants";
-import { deleteWi, renameChild, unlink, updateWiState } from "../linksManager";
+import { deleteWi, moveChild, renameChild, unlink, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
 
 interface ILinkState {
     editingTitle?: boolean;
 }
 
-export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
+export interface ILinkProps {
+    link: IWorkItemLink;
+    selected: number;
+}
+
+export class Link extends React.Component<ILinkProps, ILinkState> {
     private linkRef: HTMLDivElement;
     constructor(props, context) {
         super(props, context);
@@ -28,6 +33,7 @@ export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
             tabIndex={0}
             data-is-focusable={true}
             onKeyDown={this._onLinkKeyDown}
+            draggable={true}
             ref={(linkRef) => this.linkRef = linkRef}
         >
             <Checkbox
@@ -38,30 +44,33 @@ export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
                 tabIndex={-1}
                 data-is-focusable={false}
             />
-            {
-                editingTitle ?
-                <TextField
-                    onBlur={this._onTitleEditBlur}
-                    onKeyDown={this._onTitleEditKeyDown}
-                    value={wi.fields[titleField]}
-                    className="link-edit"
-                    autoFocus={true}
-                    onFocus={(e) => e.currentTarget.select()}
-                />
-                :
-                <a className={`link-label ${metastate}`} href={this._getLink()}
-                    tabIndex={-1}
-                    data-is-focusable={false}
-                    onClick={(e) => {
-                        const { navService } = this.props.link;
-                        navService.openNewWindow(this._getLink(), "");
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
-                >
-                    {wi.fields["System.Title"]}
-                </a>
-            }
+            <div className="label-container">
+                {
+                    editingTitle ?
+                    <TextField
+                        onBlur={this._onTitleEditBlur}
+                        onKeyDown={this._onTitleEditKeyDown}
+                        value={wi.fields[titleField]}
+                        className="link-edit"
+                        autoFocus={true}
+                        onFocus={(e) => e.currentTarget.select()}
+                    />
+                    :
+                    <a className={`link-label ${metastate}`} href={this._getLink()}
+                        tabIndex={-1}
+                        data-is-focusable={false}
+                        draggable={false}
+                        onClick={(e) => {
+                            const { navService } = this.props.link;
+                            navService.openNewWindow(this._getLink(), "");
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                    >
+                        {wi.fields["System.Title"]}
+                    </a>
+                }
+            </div>
             <IconButton
                 iconProps={ {
                     iconName: "More",
@@ -107,8 +116,11 @@ export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
             />
         </div>;
     }
-    public componentDidUpdate() {
-        if (this.state.editingTitle === false) {
+    public componentDidUpdate(_, prevState) {
+        if (
+            this.props.selected === this.props.link.wi.id ||
+            (prevState.editingTitle && !this.state.editingTitle)
+        ) {
             this.linkRef.focus();
         }
     }
@@ -132,17 +144,29 @@ export class Link extends React.Component<{link: IWorkItemLink}, ILinkState> {
     private _onLinkKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
         const { navService, wi } = this.props.link;
         if (e.keyCode === KeyCode.ENTER) {
-            navService.openNewWindow(this._getLink(), "");
-            e.preventDefault();
             e.stopPropagation();
+            e.preventDefault();
+            navService.openNewWindow(this._getLink(), "");
         } else if (e.keyCode === KeyCode.SPACE) {
+            e.stopPropagation();
+            e.preventDefault();
             this._toggleWiState();
         } else if (e.keyCode === KeyCode.DELETE) {
-            deleteWi(wi);
-            e.preventDefault();
             e.stopPropagation();
+            e.preventDefault();
+            deleteWi(wi);
         } else if (e.keyCode === KeyCode.F2) {
+            e.stopPropagation();
+            e.preventDefault();
             this.setState({editingTitle: true});
+        } else if (e.keyCode === KeyCode.DOWN && e.shiftKey) {
+            e.stopPropagation();
+            e.preventDefault();
+            moveChild(this.props.link, "down");
+        } else if (e.keyCode === KeyCode.UP && e.shiftKey) {
+            e.stopPropagation();
+            e.preventDefault();
+            moveChild(this.props.link, "up");
         }
     }
 
