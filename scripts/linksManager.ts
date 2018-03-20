@@ -6,6 +6,7 @@ import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Con
 import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks, setError, setStatus } from "./components/showLinks";
+import { trackEvent } from "./events";
 import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
 
 let prevLinks: string = "";
@@ -31,12 +32,14 @@ async function tryExecute(callback: () => Promise<void>) {
 
         // tslint:disable-next-line:no-console
         console.error(error);
+        trackEvent("error", {message});
         setError(message);
     }
 }
 
 export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
     tryExecute(async () => {
+        trackEvent("updateState", {metaState});
         const {
             [projField]: project,
             [witField]: witName,
@@ -58,6 +61,7 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
 
 export async function refreshLinksForNewWi() {
     tryExecute(async () => {
+        trackEvent("refresh", {new: "true"});
         prevLinks = "";
         renderLinks({links: [], selected});
     });
@@ -65,6 +69,7 @@ export async function refreshLinksForNewWi() {
 
 export async function deleteWi(wi: WorkItem) {
     tryExecute(async () => {
+        trackEvent("delete");
         setStatus("Deleting work item...");
         await getClient().deleteWorkItem(wi.id);
         delete wis[wi.id];
@@ -77,8 +82,9 @@ export async function deleteWi(wi: WorkItem) {
     });
 }
 
-export async function moveChild(link: IWorkItemLink, dir: "up" | "down") {
+export async function moveLink(link: IWorkItemLink, dir: "up" | "down") {
     tryExecute(async () => {
+        trackEvent("moveLink", {dir});
         const service = await WorkItemFormService.getService();
         const project = await service.getFieldValue(projField) as string;
         const orderField = await getOrderFieldName(project);
@@ -132,6 +138,7 @@ export async function moveChild(link: IWorkItemLink, dir: "up" | "down") {
 
 export async function createChildWi(childTitle: string) {
     tryExecute(async () => {
+        trackEvent("create", {type: "child"});
         const service = await WorkItemFormService.getService();
         const {
             [witField]: wit,
@@ -202,8 +209,9 @@ export async function selectWi(id: number) {
     });
 }
 
-export async function renameChild(child: WorkItem, title: string) {
+export async function renameWi(child: WorkItem, title: string) {
     tryExecute(async () => {
+        trackEvent("rename");
         const patch: JsonPatchDocument & JsonPatchOperation[] = [
             {
                 op: Operation.Add,
@@ -221,6 +229,7 @@ export async function renameChild(child: WorkItem, title: string) {
 
 export async function unlink(link: IWorkItemLink) {
     tryExecute(async () => {
+        trackEvent("unlink");
         const service = await WorkItemFormService.getService();
         await service.removeWorkItemRelations([link.link]);
     });
@@ -264,6 +273,7 @@ async function getRelationComparer(project: string) {
 let refreshCounter = 0;
 export async function refreshLinks(force: boolean = false) {
     tryExecute(async () => {
+        trackEvent("refresh", {new: "false"});
         const start = ++refreshCounter;
         const service = await WorkItemFormService.getService();
         rels = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);

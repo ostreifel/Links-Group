@@ -6,7 +6,7 @@ import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
 import { titleField } from "../fieldConstants";
-import { deleteWi, moveChild, renameChild, unlink, updateWiState } from "../linksManager";
+import { deleteWi, moveLink, renameWi, unlink, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
 
 interface ILinkState {
@@ -170,11 +170,11 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         } else if (e.keyCode === KeyCode.DOWN && e.shiftKey) {
             e.stopPropagation();
             e.preventDefault();
-            moveChild(this.props.link, "down");
+            moveLink(this.props.link, "down");
         } else if (e.keyCode === KeyCode.UP && e.shiftKey) {
             e.stopPropagation();
             e.preventDefault();
-            moveChild(this.props.link, "up");
+            moveLink(this.props.link, "up");
         }
     }
 
@@ -183,7 +183,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         const newTitle = e.currentTarget.value;
         const oldTitle = this.props.link.wi.fields[titleField];
         if (newTitle && newTitle !== oldTitle && this.state.editingTitle) {
-            await renameChild(this.props.link.wi, e.currentTarget.value);
+            await renameWi(this.props.link.wi, e.currentTarget.value);
         }
         this.setState({editingTitle: false});
     }
@@ -193,7 +193,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         if (e.keyCode === KeyCode.ENTER && e.currentTarget.value) {
             e.stopPropagation();
             e.preventDefault();
-            await renameChild(this.props.link.wi, e.currentTarget.value);
+            await renameWi(this.props.link.wi, e.currentTarget.value);
             this.setState({editingTitle: false});
         } else if (e.keyCode === KeyCode.ESCAPE) {
             e.stopPropagation();
