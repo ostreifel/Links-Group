@@ -30,41 +30,46 @@
         outline: 1px solid black;
     }
 }
-#links-container {
-    padding: 2px 1px 2px 1px;
-    .links .link {
-        display: flex;
-        align-items: center;
-        .checkbox {
-            margin: 0px 5px;
-        }
-        .label-container {
-            flex: 1;
-            .link-label {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                word-wrap: normal;
-                font-size: 14px;
-                color: black;
-                &.Completed {
-                    text-decoration: line-through;
-                    color: #999;
+.main-content {
+    #links-container {
+        padding: 2px 1px 2px 1px;
+        .links .link {
+            display: flex;
+            align-items: center;
+            .checkbox {
+                margin: 0px 5px;
+            }
+            .label-container {
+                flex: 1;
+                .link-label {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    word-wrap: normal;
+                    font-size: 14px;
+                    color: black;
+                    &.Completed {
+                        text-decoration: line-through;
+                        color: #999;
+                    }
+                }
+                .link-edit {
+                    width: 100%;
+                    margin: 0px;
                 }
             }
-            .link-edit {
-                width: 100%;
-                margin: 0px;
+            &:not(:hover) .link-options {
+                visibility: hidden;
+            }
+            .link-options .ms-Button-menuIcon {
+                display: none;
             }
         }
-        &:not(:hover) .link-options {
-            visibility: hidden;
-        }
-        .link-options .ms-Button-menuIcon {
-            display: none;
+        .add-button {
+            margin-top: 2px;
         }
     }
-    .add-button {
-        margin-top: 2px;
+    .error-message {
+        color: red;
     }
 }

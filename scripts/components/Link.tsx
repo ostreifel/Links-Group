@@ -86,6 +86,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                             key: "Delete",
                             icon: "RecycleBin",
                             name: "Delete (del)",
+                            title: "Go to the recycling bin to undo",
                             onClick: (e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
