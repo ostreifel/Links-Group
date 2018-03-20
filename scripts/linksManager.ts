@@ -48,6 +48,7 @@ export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
                 value: await getState(project, witName, metaState),
             } as JsonPatchOperation,
         ];
+        setStatus("Updating work item state...");
         const wi = await getClient().updateWorkItem(patch, workitem.id);
         wis[wi.id] = wi;
         selected = wi.id;
@@ -64,6 +65,7 @@ export async function refreshLinksForNewWi() {
 
 export async function deleteWi(wi: WorkItem) {
     tryExecute(async () => {
+        setStatus("Deleting work item...");
         await getClient().deleteWorkItem(wi.id);
         delete wis[wi.id];
 
@@ -116,6 +118,7 @@ export async function moveChild(link: IWorkItemLink, dir: "up" | "down") {
                 value: currRank,
             } as JsonPatchOperation,
         ];
+        setStatus("Moving work items...");
         const [currUpdate, otherUpdate] = await Promise.all([
             getClient().updateWorkItem(currPatch, link.wi.id),
             getClient().updateWorkItem(otherPatch, otherId),
@@ -182,6 +185,7 @@ export async function createChildWi(childTitle: string) {
                 },
             } as JsonPatchOperation,
         ];
+        setStatus("Creating work item...");
         const child = await getClient().createWorkItem(patch, project, childWitName);
         rels.push({url: child.url} as WorkItemRelation);
         wis[child.id] = child;
@@ -207,6 +211,7 @@ export async function renameChild(child: WorkItem, title: string) {
                 value: title,
             } as JsonPatchOperation,
         ];
+        setStatus("Renaming work item...");
         const updated = await getClient().updateWorkItem(patch, child.id);
         wis[updated.id] = updated;
         selected = updated.id;
@@ -222,6 +227,7 @@ export async function unlink(link: IWorkItemLink) {
 }
 
 async function update() {
+    setStatus("");
     const navService = await VSS.getService<HostNavigationService>(VSS.ServiceIds.Navigation);
     const links: IWorkItemLink[] = await Promise.all(rels.map(async (rel): Promise<IWorkItemLink> => {
         const wi = wis[idFromUrl(rel.url)];
@@ -269,6 +275,7 @@ export async function refreshLinks(force: boolean = false) {
             return;
         }
         prevLinks = linksKey;
+        setStatus("Getting linked workitems...");
         const wiArr = rels.length > 0 ? await getClient().getWorkItems(rels.map((rel) => idFromUrl(rel.url))) : [];
         if (start !== refreshCounter) {
             return;

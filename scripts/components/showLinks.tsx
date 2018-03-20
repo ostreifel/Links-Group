@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { DelayedFunction } from "VSS/Utils/Core";
 import { ILinkProps, Links } from "./Links";
 
 function resize() {
@@ -14,14 +15,24 @@ function resize() {
 function afterRender() {
     $("#links-container .link .checkbox").attr("data-is-focusable", "false").attr("tab-index", -1);
 
-    $(".error-message").text("");
-    $(".status-message").text("");
+    setStatus("");
     resize();
 }
 
+let delayedStatus: string = "";
+/** don't want status flashing in and out for quick changes */
+const delayedSetStatus: DelayedFunction = new DelayedFunction(null, 500, "", () => {
+    $(".status-message").text(delayedStatus);
+    resize();
+});
 export function setStatus(message: string) {
     $(".error-message").text("");
-    $(".status-message").text(message);
+    delayedStatus = message;
+    if (delayedStatus) {
+        delayedSetStatus.reset();
+    } else {
+        delayedSetStatus.invokeNow();
+    }
     resize();
 }
 
