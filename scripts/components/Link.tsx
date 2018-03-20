@@ -25,8 +25,11 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         this.state = {};
     }
     public render() {
-        const {wi, metastate } = this.props.link;
+        const {wi, metastate, workItemType } = this.props.link;
         const { editingTitle } = this.state;
+        // tslint:disable-next-line:no-string-literal
+        const icon = workItemType["icon"];
+        const iconUrl: string = icon && icon.url;
 
         return <div
             className="link"
@@ -67,6 +70,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                             e.stopPropagation();
                         }}
                     >
+                        {iconUrl ? <img className="wi-icon" src={iconUrl} /> : null }
                         {wi.fields["System.Title"]}
                     </a>
                 }

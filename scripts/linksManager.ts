@@ -8,6 +8,7 @@ import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks, setError, setStatus } from "./components/showLinks";
 import { trackEvent } from "./events";
 import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
+import { getWit } from "./workItemTypes";
 
 let prevLinks: string = "";
 let rels: WorkItemRelation[] = [];
@@ -245,6 +246,7 @@ async function update() {
             link: rel,
             metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
             navService,
+            workItemType: await getWit(wi.fields[projField], wi.fields[witField]),
         };
     }));
     const formService = await WorkItemFormService.getService();
@@ -276,7 +278,9 @@ export async function refreshLinks(force: boolean = false) {
         trackEvent("refresh", {new: "false"});
         const start = ++refreshCounter;
         const service = await WorkItemFormService.getService();
-        rels = (await service.getWorkItemRelations()).filter((rel) => !rel.attributes.isDeleted);
+        rels = (await service.getWorkItemRelations()).filter(
+            (rel) => !rel.attributes.isDeleted && rel.rel.match(/^System\.LinkTypes/),
+        );
         if (start !== refreshCounter) {
             return;
         }

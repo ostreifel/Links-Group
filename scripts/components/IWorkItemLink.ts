@@ -1,4 +1,4 @@
-import { WorkItem, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
+import { WorkItem, WorkItemRelation, WorkItemType } from "TFS/WorkItemTracking/Contracts";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { MetaState } from "../backlogConfiguration";
 
@@ -7,4 +7,5 @@ export interface IWorkItemLink {
     link: WorkItemRelation;
     metastate: MetaState;
     navService: HostNavigationService;
+    workItemType: WorkItemType;
 }
