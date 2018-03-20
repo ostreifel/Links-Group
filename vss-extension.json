@@ -1,8 +1,8 @@
 {
     "manifestVersion": 1,
     "id": "links-group",
-    "version": "0.1.160",
-    "name": "Link Group",
+    "version": "0.1.163",
+    "name": "Links Group",
     "scopes": [ "vso.work", "vso.work_write" ],
     "description": "Update links from the main from page",
     "publisher": "ottostreifel",
@@ -54,7 +54,7 @@
     ],
     "contributions": [
         {
-            "id": "link-group",
+            "id": "links-group",
             "type": "ms.vss-work-web.work-item-form-group",
             "description": "Show links associated with the current workitem",
             "targets": [
