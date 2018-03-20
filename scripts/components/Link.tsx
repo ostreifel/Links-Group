@@ -8,6 +8,7 @@ import { MetaState } from "../backlogConfiguration";
 import { titleField } from "../fieldConstants";
 import { deleteWi, moveLink, renameWi, unlink, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
+import { trackEvent } from "../events";
 
 interface ILinkState {
     editingTitle?: boolean;
@@ -65,6 +66,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                         draggable={false}
                         onClick={(e) => {
                             const { navService } = this.props.link;
+                            trackEvent("clickLink", {rel: this.props.link.link.rel});
                             navService.openNewWindow(this._getLink(), "");
                             e.preventDefault();
                             e.stopPropagation();
