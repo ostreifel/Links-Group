@@ -142,6 +142,9 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
 
     @autobind
     private _onLinkKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.target instanceof HTMLInputElement) {
+            return;
+        }
         const { navService, wi } = this.props.link;
         if (e.keyCode === KeyCode.ENTER) {
             e.stopPropagation();
