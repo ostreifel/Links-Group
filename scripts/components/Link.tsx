@@ -84,28 +84,28 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                     items: [
                         {
                             key: "Delete",
-                            icon: "Cancel",
-                            name: "Delete",
+                            icon: "RecycleBin",
+                            name: "Delete (del)",
                             onClick: (e) => {
-                                deleteWi(wi);
-                                e.preventDefault();
                                 e.stopPropagation();
+                                e.preventDefault();
+                                deleteWi(wi);
                             },
                         },
                         {
-                            key: "Delete",
+                            key: "Unlink",
                             icon: "RemoveLink",
-                            name: "Unlink",
+                            name: "Unlink (ctr + u)",
                             onClick: (e) => {
-                                unlink(this.props.link);
                                 e.stopPropagation();
                                 e.preventDefault();
+                                unlink(this.props.link);
                             },
                         },
                         {
                             key: "Rename",
                             icon: "Rename",
-                            name: "Rename",
+                            name: "Rename (f2)",
                             onClick: () => {
                                 this.setState({editingTitle: true});
                             },
@@ -155,6 +155,10 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
             e.stopPropagation();
             e.preventDefault();
             deleteWi(wi);
+        } else if (String.fromCharCode(e.keyCode).toUpperCase() === "U" && e.ctrlKey) {
+            e.stopPropagation();
+            e.preventDefault();
+            unlink(this.props.link);
         } else if (e.keyCode === KeyCode.F2) {
             e.stopPropagation();
             e.preventDefault();
