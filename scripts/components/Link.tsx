@@ -5,10 +5,10 @@ import { autobind } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
+import { trackEvent } from "../events";
 import { titleField } from "../fieldConstants";
 import { deleteWi, moveLink, renameWi, unlink, updateWiState } from "../linksManager";
 import { IWorkItemLink } from "./IWorkItemLink";
-import { trackEvent } from "../events";
 
 interface ILinkState {
     editingTitle?: boolean;

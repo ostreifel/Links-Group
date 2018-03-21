@@ -37,7 +37,6 @@ export function setStatus(message: string) {
 }
 
 export function setError(message: string) {
-    $(".status-message").text("");
     $(".error-message").text(message);
     resize();
 }

@@ -8,6 +8,7 @@ import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks, setError, setStatus } from "./components/showLinks";
 import { trackEvent } from "./events";
 import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
+import { getRelationTypes, IRelationLookup } from "./relationTypes";
 import { getWit } from "./workItemTypes";
 
 let prevLinks: string = "";
@@ -15,9 +16,22 @@ let rels: WorkItemRelation[] = [];
 let wis: {[id: number]: WorkItem} = {};
 let selected = -1;
 
-function idFromUrl(url: string): number {
-    const match = url.match(/\d+$/);
-    return match ? Number(match[0]) : -1;
+function wiIdFromUrl(url: string): number {
+    const match = url.match(/workitems\/(\d+)$/i);
+    return match ? Number(match[1]) : -1;
+}
+
+function getLinkType(types: IRelationLookup, name: string) {
+    return types[name] || types[name.replace(/-Forward$|-Reverse$/, "")];
+}
+
+async function linkedWiIds() {
+    const relTypes = await getRelationTypes();
+    return rels.filter(
+        (rel) => getLinkType(relTypes, rel.rel).attributes.usage === "workItemLink",
+    ).map(
+        ({url}) => wiIdFromUrl(url),
+    );
 }
 
 async function tryExecute(callback: () => Promise<void>) {
@@ -75,7 +89,7 @@ export async function deleteWi(wi: WorkItem) {
         await getClient().deleteWorkItem(wi.id);
         delete wis[wi.id];
 
-        const idx = rels.map(({url}) => idFromUrl(url)).indexOf(wi.id);
+        const idx = rels.map(({url}) => wiIdFromUrl(url)).indexOf(wi.id);
         rels.splice(idx, 1);
         await update();
         // const service = await WorkItemFormService.getService();
@@ -195,7 +209,7 @@ export async function createChildWi(childTitle: string) {
         ];
         setStatus("Creating work item...");
         const child = await getClient().createWorkItem(patch, project, childWitName);
-        rels.push({url: child.url} as WorkItemRelation);
+        rels.push({url: child.url, rel: "System.LinkTypes.Hierarchy-Forward"} as WorkItemRelation);
         wis[child.id] = child;
         selected = child.id;
         await update();
@@ -239,16 +253,22 @@ export async function unlink(link: IWorkItemLink) {
 async function update() {
     setStatus("");
     const navService = await VSS.getService<HostNavigationService>(VSS.ServiceIds.Navigation);
-    const links: IWorkItemLink[] = await Promise.all(rels.map(async (rel): Promise<IWorkItemLink> => {
-        const wi = wis[idFromUrl(rel.url)];
+    const relTypes = await getRelationTypes();
+    const links: IWorkItemLink[] = (await Promise.all(rels.map(async (rel): Promise<IWorkItemLink> => {
+        const linkType = getLinkType(relTypes, rel.rel);
+        if (!linkType || linkType.attributes.usage !== "workItemLink") {
+            return null;
+        }
+        const wi = wis[wiIdFromUrl(rel.url)];
         return {
             wi,
             link: rel,
+            relationType: linkType,
             metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
             navService,
             workItemType: await getWit(wi.fields[projField], wi.fields[witField]),
         };
-    }));
+    }))).filter((rel) => rel);
     const formService = await WorkItemFormService.getService();
     const project = await formService.getFieldValue(projField) as string;
     links.sort(await getRelationComparer(project));
@@ -279,7 +299,7 @@ export async function refreshLinks(force: boolean = false) {
         const start = ++refreshCounter;
         const service = await WorkItemFormService.getService();
         rels = (await service.getWorkItemRelations()).filter(
-            (rel) => !rel.attributes.isDeleted && rel.rel.match(/^System\.LinkTypes/),
+            (rel) => !rel.attributes.isDeleted,
         );
         if (start !== refreshCounter) {
             return;
@@ -290,7 +310,8 @@ export async function refreshLinks(force: boolean = false) {
         }
         prevLinks = linksKey;
         setStatus("Getting linked workitems...");
-        const wiArr = rels.length > 0 ? await getClient().getWorkItems(rels.map((rel) => idFromUrl(rel.url))) : [];
+        const wiIds = await linkedWiIds();
+        const wiArr = wiIds.length > 0 ? await getClient().getWorkItems(wiIds) : [];
         if (start !== refreshCounter) {
             return;
         }
