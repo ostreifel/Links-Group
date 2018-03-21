@@ -6,7 +6,7 @@ import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Con
 import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { renderLinks, setError, setStatus } from "./components/showLinks";
-import { trackEvent } from "./events";
+import { IProperties, trackEvent } from "./events";
 import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
 import { getRelationTypes, IRelationLookup } from "./relationTypes";
 import { getWit } from "./workItemTypes";
@@ -47,14 +47,21 @@ async function tryExecute(callback: () => Promise<void>) {
 
         // tslint:disable-next-line:no-console
         console.error(error);
-        trackEvent("error", {message});
+        trackEvent("error", {message, ...getProps()});
         setError(message);
     }
 }
 
+function getProps(): IProperties {
+    return {
+        wiCount: Object.keys(wis).length + "",
+        relCount: rels.length + "",
+    };
+}
+
 export async function updateWiState(trigger: string, workitem: WorkItem, metaState: MetaState) {
     tryExecute(async () => {
-        trackEvent("updateState", {metaState, trigger});
+        trackEvent("updateState", {metaState, trigger, ...getProps()});
         const {
             [projField]: project,
             [witField]: witName,
@@ -76,7 +83,7 @@ export async function updateWiState(trigger: string, workitem: WorkItem, metaSta
 
 export async function refreshLinksForNewWi() {
     tryExecute(async () => {
-        trackEvent("refresh", {new: "true"});
+        trackEvent("refresh", {new: "true", ...getProps()});
         prevLinks = "";
         renderLinks({links: [], selected});
     });
@@ -84,7 +91,7 @@ export async function refreshLinksForNewWi() {
 
 export async function deleteWi(trigger: string, wi: WorkItem) {
     tryExecute(async () => {
-        trackEvent("delete", {trigger});
+        trackEvent("delete", {trigger, ...getProps()});
         setStatus("Deleting work item...");
         await getClient().deleteWorkItem(wi.id);
         delete wis[wi.id];
@@ -99,7 +106,7 @@ export async function deleteWi(trigger: string, wi: WorkItem) {
 
 export async function moveLink(trigger: string, link: IWorkItemLink, dir: "up" | "down") {
     tryExecute(async () => {
-        trackEvent("moveLink", {dir, trigger});
+        trackEvent("moveLink", {dir, trigger, ...getProps()});
         const service = await WorkItemFormService.getService();
         const project = await service.getFieldValue(projField) as string;
         const orderField = await getOrderFieldName(project);
@@ -153,7 +160,7 @@ export async function moveLink(trigger: string, link: IWorkItemLink, dir: "up" |
 
 export async function createChildWi(trigger: string, childTitle: string) {
     tryExecute(async () => {
-        trackEvent("create", {type: "child", trigger});
+        trackEvent("create", {type: "child", trigger, ...getProps()});
         const service = await WorkItemFormService.getService();
         const {
             [witField]: wit,
@@ -226,7 +233,7 @@ export async function selectWi(id: number) {
 
 export async function renameWi(trigger: string, child: WorkItem, title: string) {
     tryExecute(async () => {
-        trackEvent("rename", {trigger});
+        trackEvent("rename", {trigger, ...getProps()});
         const patch: JsonPatchDocument & JsonPatchOperation[] = [
             {
                 op: Operation.Add,
@@ -244,7 +251,7 @@ export async function renameWi(trigger: string, child: WorkItem, title: string) 
 
 export async function unlink(trigger: string, link: IWorkItemLink) {
     tryExecute(async () => {
-        trackEvent("unlink", {trigger});
+        trackEvent("unlink", {trigger, ...getProps()});
         const service = await WorkItemFormService.getService();
         await service.removeWorkItemRelations([link.link]);
     });
@@ -295,7 +302,7 @@ async function getRelationComparer(project: string) {
 let refreshCounter = 0;
 export async function refreshLinks(force: boolean = false) {
     tryExecute(async () => {
-        trackEvent("refresh", {new: "false"});
+        trackEvent("refresh", {new: "false", ...getProps()});
         const start = ++refreshCounter;
         const service = await WorkItemFormService.getService();
         rels = (await service.getWorkItemRelations()).filter(
