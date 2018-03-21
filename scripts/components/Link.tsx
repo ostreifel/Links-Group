@@ -12,6 +12,8 @@ import { IWorkItemLink } from "./IWorkItemLink";
 
 interface ILinkState {
     editingTitle?: boolean;
+    /* event type that triggered rename */
+    trigger?: string;
 }
 
 export interface ILinkProps {
@@ -41,7 +43,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
             ref={(linkRef) => this.linkRef = linkRef}
         >
             <Checkbox
-                onChange={this._toggleWiState}
+                onChange={(e) => this._toggleWiState(e.type)}
                 ariaLabel="Completed"
                 checked={metastate === "Completed"}
                 className="checkbox"
@@ -66,7 +68,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                         draggable={false}
                         onClick={(e) => {
                             const { navService } = this.props.link;
-                            trackEvent("clickLink", {rel: this.props.link.link.rel});
+                            trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
                             navService.openNewWindow(this._getLink(), "");
                             e.preventDefault();
                             e.stopPropagation();
@@ -96,7 +98,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                             onClick: (e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                deleteWi(wi);
+                                deleteWi(e.type, wi);
                             },
                         },
                         {
@@ -106,15 +108,15 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                             onClick: (e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                unlink(this.props.link);
+                                unlink(e.type, this.props.link);
                             },
                         },
                         {
                             key: "Rename",
                             icon: "Rename",
                             name: "Rename (f2)",
-                            onClick: () => {
-                                this.setState({editingTitle: true});
+                            onClick: (e) => {
+                                this.setState({editingTitle: true, trigger: e.type});
                             },
                         },
                     ],
@@ -140,11 +142,11 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
     }
 
     @autobind
-    private _toggleWiState() {
+    private _toggleWiState(trigger: string) {
         const { wi, metastate } = this.props.link;
 
         const altState: MetaState = metastate === "Completed" ? "Proposed" : "Completed";
-        updateWiState(wi, altState);
+        updateWiState(trigger, wi, altState);
     }
 
     @autobind
@@ -156,31 +158,32 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         if (e.keyCode === KeyCode.ENTER) {
             e.stopPropagation();
             e.preventDefault();
+            trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
             navService.openNewWindow(this._getLink(), "");
         } else if (e.keyCode === KeyCode.SPACE) {
             e.stopPropagation();
             e.preventDefault();
-            this._toggleWiState();
+            this._toggleWiState(e.type);
         } else if (e.keyCode === KeyCode.DELETE) {
             e.stopPropagation();
             e.preventDefault();
-            deleteWi(wi);
+            deleteWi(e.type, wi);
         } else if (String.fromCharCode(e.keyCode).toUpperCase() === "U" && e.ctrlKey) {
             e.stopPropagation();
             e.preventDefault();
-            unlink(this.props.link);
+            unlink(e.type, this.props.link);
         } else if (e.keyCode === KeyCode.F2) {
             e.stopPropagation();
             e.preventDefault();
-            this.setState({editingTitle: true});
+            this.setState({editingTitle: true, trigger: e.type});
         } else if (e.keyCode === KeyCode.DOWN && e.shiftKey) {
             e.stopPropagation();
             e.preventDefault();
-            moveLink(this.props.link, "down");
+            moveLink(e.type, this.props.link, "down");
         } else if (e.keyCode === KeyCode.UP && e.shiftKey) {
             e.stopPropagation();
             e.preventDefault();
-            moveLink(this.props.link, "up");
+            moveLink(e.type, this.props.link, "up");
         }
     }
 
@@ -189,7 +192,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         const newTitle = e.currentTarget.value;
         const oldTitle = this.props.link.wi.fields[titleField];
         if (newTitle && newTitle !== oldTitle && this.state.editingTitle) {
-            await renameWi(this.props.link.wi, e.currentTarget.value);
+            await renameWi(e.type, this.props.link.wi, e.currentTarget.value);
         }
         this.setState({editingTitle: false});
     }
@@ -199,7 +202,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         if (e.keyCode === KeyCode.ENTER && e.currentTarget.value) {
             e.stopPropagation();
             e.preventDefault();
-            await renameWi(this.props.link.wi, e.currentTarget.value);
+            await renameWi(this.state.trigger, this.props.link.wi, e.currentTarget.value);
             this.setState({editingTitle: false});
         } else if (e.keyCode === KeyCode.ESCAPE) {
             e.stopPropagation();

@@ -52,9 +52,9 @@ async function tryExecute(callback: () => Promise<void>) {
     }
 }
 
-export async function updateWiState(workitem: WorkItem, metaState: MetaState) {
+export async function updateWiState(trigger: string, workitem: WorkItem, metaState: MetaState) {
     tryExecute(async () => {
-        trackEvent("updateState", {metaState});
+        trackEvent("updateState", {metaState, trigger});
         const {
             [projField]: project,
             [witField]: witName,
@@ -82,9 +82,9 @@ export async function refreshLinksForNewWi() {
     });
 }
 
-export async function deleteWi(wi: WorkItem) {
+export async function deleteWi(trigger: string, wi: WorkItem) {
     tryExecute(async () => {
-        trackEvent("delete");
+        trackEvent("delete", {trigger});
         setStatus("Deleting work item...");
         await getClient().deleteWorkItem(wi.id);
         delete wis[wi.id];
@@ -97,9 +97,9 @@ export async function deleteWi(wi: WorkItem) {
     });
 }
 
-export async function moveLink(link: IWorkItemLink, dir: "up" | "down") {
+export async function moveLink(trigger: string, link: IWorkItemLink, dir: "up" | "down") {
     tryExecute(async () => {
-        trackEvent("moveLink", {dir});
+        trackEvent("moveLink", {dir, trigger});
         const service = await WorkItemFormService.getService();
         const project = await service.getFieldValue(projField) as string;
         const orderField = await getOrderFieldName(project);
@@ -151,9 +151,9 @@ export async function moveLink(link: IWorkItemLink, dir: "up" | "down") {
     });
 }
 
-export async function createChildWi(childTitle: string) {
+export async function createChildWi(trigger: string, childTitle: string) {
     tryExecute(async () => {
-        trackEvent("create", {type: "child"});
+        trackEvent("create", {type: "child", trigger});
         const service = await WorkItemFormService.getService();
         const {
             [witField]: wit,
@@ -224,9 +224,9 @@ export async function selectWi(id: number) {
     });
 }
 
-export async function renameWi(child: WorkItem, title: string) {
+export async function renameWi(trigger: string, child: WorkItem, title: string) {
     tryExecute(async () => {
-        trackEvent("rename");
+        trackEvent("rename", {trigger});
         const patch: JsonPatchDocument & JsonPatchOperation[] = [
             {
                 op: Operation.Add,
@@ -242,9 +242,9 @@ export async function renameWi(child: WorkItem, title: string) {
     });
 }
 
-export async function unlink(link: IWorkItemLink) {
+export async function unlink(trigger: string, link: IWorkItemLink) {
     tryExecute(async () => {
-        trackEvent("unlink");
+        trackEvent("unlink", {trigger});
         const service = await WorkItemFormService.getService();
         await service.removeWorkItemRelations([link.link]);
     });

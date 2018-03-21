@@ -39,7 +39,7 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
     @autobind
     private async _onBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
         if (e.currentTarget.value) {
-            await createChildWi(e.currentTarget.value);
+            await createChildWi(e.type, e.currentTarget.value);
         }
         this.setState({addingChild: false, focusButton: true});
     }
@@ -49,7 +49,7 @@ export class AddLink extends React.Component<{}, IAddLinkState> {
         if (e.keyCode === KeyCode.ESCAPE) {
             this.setState({addingChild: false, focusButton: true});
         } else if (e.keyCode === KeyCode.ENTER) {
-            await createChildWi(e.currentTarget.value);
+            await createChildWi(e.type, e.currentTarget.value);
             this.setState({addingChild: false, focusButton: true});
         }
     }
