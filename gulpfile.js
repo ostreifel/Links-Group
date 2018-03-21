@@ -36,7 +36,7 @@ gulp.task('styles', ['clean', 'tslint'], () => {
 });
 
 gulp.task('build', ['styles'], () => {
-    execSync(`webpack ${!yargs.argv.release ? "--devtool source-map" : ""}`, {
+    execSync(`webpack --devtool source-map`, {
         stdio: [null, process.stdout, process.stderr]
     });
     // return webpack(require('./webpack.config.js'));

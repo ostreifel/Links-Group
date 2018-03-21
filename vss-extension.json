@@ -1,10 +1,10 @@
 {
     "manifestVersion": 1,
     "id": "links-group",
-    "version": "0.1.180",
+    "version": "0.1.182",
     "name": "Links Group",
     "scopes": [ "vso.work", "vso.work_write" ],
-    "description": "Update links from the main from page",
+    "description": "Update links from first page of the work item form.",
     "publisher": "ottostreifel",
     "icons": {
         "default": "img/logo.png"
