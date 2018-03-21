@@ -58,4 +58,4 @@ Within the same Weblayout choose a Section element and add
 
 
 # Change Log
-(02/10/17) 1.0.1 Initial release
+(03/20/17) 1.0.1 Initial release
