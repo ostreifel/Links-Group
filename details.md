@@ -53,9 +53,9 @@ add
 ```
 Within the same Weblayout choose a Section element and add
 ```xml
-<GroupContribution Label="Board" Id="ottostreifel.links-group.links-group"/>
+<GroupContribution Label="Attachments" Id="ottostreifel.links-group.links-group"/>
 ```
 
 
 # Change Log
-(03/20/17) 1.0.1 Initial release
+(03/20/18) 1.0.1 Initial release
