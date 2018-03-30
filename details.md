@@ -33,7 +33,7 @@ To make the functionality available on the board available in the work item form
 ![Big feature work item on board with 2 child links: Part 1, Part 2](img/board.png)
 
 
-# Configuration with on Team Services 
+# Configuration with Visual Studio Team Services 
 
 To configure where the board group is added click on the customize option from the work item form.  
 ![customize context image](img/customizeToolbar.png)  
