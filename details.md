@@ -53,7 +53,7 @@ add
 ```
 Within the same Weblayout choose a Section element and add
 ```xml
-<GroupContribution Label="Attachments" Id="ottostreifel.links-group.links-group"/>
+<GroupContribution Label="Links" Id="ottostreifel.links-group.links-group"/>
 ```
 
 
