@@ -5,7 +5,7 @@ import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
 import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
-import { renderLinks, setError, setStatus } from "./components/showLinks";
+import { getStatus, renderLinks, setError, setStatus } from "./components/showLinks";
 import { IProperties, trackEvent } from "./events";
 import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
 import { getRelationTypes, IRelationLookup } from "./relationTypes";
@@ -47,7 +47,7 @@ async function tryExecute(callback: () => Promise<void>) {
 
         // tslint:disable-next-line:no-console
         console.error(error);
-        trackEvent("error", {message, ...getProps()});
+        trackEvent("error", {message, stack: error && error.stack, status: getStatus(), ...getProps()});
         setError(message);
     }
 }

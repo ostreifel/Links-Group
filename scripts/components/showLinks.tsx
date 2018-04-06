@@ -35,6 +35,9 @@ export function setStatus(message: string) {
     }
     resize();
 }
+export function getStatus() {
+    return delayedStatus;
+}
 
 export function setError(message: string) {
     $(".error-message").text(message);
