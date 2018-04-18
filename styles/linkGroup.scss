@@ -41,14 +41,19 @@
             }
             .label-container {
                 flex: 1;
+                max-width: calc(100% - 62px);
                 .link-label {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     word-wrap: normal;
+                    max-width: 100%;
+                    display: inline-block;
                     font-size: 14px;
-                    color: black;
-                    &.Completed {
+                    a {
+                        color: black;
+                    }
+                    &.Completed a {
                         text-decoration: line-through;
                         color: #999;
                     }

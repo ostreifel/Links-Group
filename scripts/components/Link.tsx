@@ -62,21 +62,23 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                         onFocus={(e) => e.currentTarget.select()}
                     />
                     :
-                    <a className={`link-label ${metastate}`} href={this._getLink()}
-                        tabIndex={-1}
-                        data-is-focusable={false}
-                        draggable={false}
-                        onClick={(e) => {
-                            const { navService } = this.props.link;
-                            trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
-                            navService.openNewWindow(this._getLink(), "");
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }}
+                    <div className={`link-label ${metastate}`}
                     >
                         {iconUrl ? <img className="wi-icon" src={iconUrl} /> : null }
-                        {wi.fields["System.Title"]}
-                    </a>
+                        <a
+                            href={this._getLink()}
+                            tabIndex={-1}
+                            data-is-focusable={false}
+                            draggable={false}
+                            onClick={(e) => {
+                                const { navService } = this.props.link;
+                                trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
+                                navService.openNewWindow(this._getLink(), "");
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                        >{wi.fields["System.Title"]}</a>
+                    </div>
                 }
             </div>
             <IconButton
