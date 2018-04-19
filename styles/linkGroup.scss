@@ -41,7 +41,7 @@
             }
             .label-container {
                 flex: 1;
-                max-width: calc(100% - 62px);
+                max-width: calc(100% - 30px);
                 .link-label {
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -70,6 +70,9 @@
             }
             &:not(:hover) .link-options {
                 visibility: hidden;
+            }
+            &:hover .label-container {
+                max-width: calc(100% - 62px);
             }
             .link-options .ms-Button-menuIcon {
                 display: none;
