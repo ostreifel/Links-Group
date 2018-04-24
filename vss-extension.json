@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1,
     "id": "links-group",
-    "version": "1.0.22",
+    "version": "1.0.24",
     "name": "Links Group",
     "scopes": [ "vso.work", "vso.work_write" ],
     "description": "Update links from first page of the work item form.",

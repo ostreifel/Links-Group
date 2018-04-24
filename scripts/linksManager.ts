@@ -267,6 +267,9 @@ async function update() {
             return null;
         }
         const wi = wis[wiIdFromUrl(rel.url)];
+        if (!await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField])) {
+            return null;
+        }
         return {
             wi,
             link: rel,
