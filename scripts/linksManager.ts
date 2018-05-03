@@ -267,14 +267,15 @@ async function update() {
             return null;
         }
         const wi = wis[wiIdFromUrl(rel.url)];
-        if (!await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField])) {
+        const metastate = await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]);
+        if (!metastate) {
             return null;
         }
         return {
             wi,
             link: rel,
             relationType: linkType,
-            metastate: await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]),
+            metastate,
             navService,
             workItemType: await getWit(wi.fields[projField], wi.fields[witField]),
         };

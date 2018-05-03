@@ -24,11 +24,12 @@ export async function getState(project: string, witName: string, metaState: Meta
     throw new Error(`Could not find state for ${project}, ${witName}, ${metaState}`);
 }
 
-export async function getMetaState(project: string, witName: string, state: string): Promise<MetaState> {
+export async function getMetaState(project: string, witName: string, state: string): Promise<MetaState | ""> {
     const config = await getConfiguration(project);
     const [stateInfo] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
     if (!stateInfo) {
         trackEvent("missingStateInfo", {witName, state, states: JSON.stringify(config.workItemTypeMappedStates)});
+        return "";
     }
     const {states} = stateInfo;
     return states[state] as MetaState;
@@ -36,7 +37,7 @@ export async function getMetaState(project: string, witName: string, state: stri
 
 export async function getChildWitName(project: string, witName: string): Promise<string> {
     const config = await getConfiguration(project);
-    const levels = [config.requirementBacklog, config.taskBacklog, ...config.portfolioBacklogs];
+    const levels = [config.requirementBacklog, config.taskBacklog, ...config.portfolioBacklogs].filter((a) => !!a);
     levels.sort((a, b) => b.rank - a.rank);
 
     const [{rank}] = levels.filter((lvl) => lvl.workItemTypes.filter(({name}) => name === witName).length > 0);
