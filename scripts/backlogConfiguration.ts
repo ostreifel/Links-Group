@@ -1,6 +1,7 @@
 import { TeamContext } from "TFS/Core/Contracts";
 import { BacklogConfiguration } from "TFS/Work/Contracts";
 import { getClient } from "TFS/Work/RestClient";
+import { trackEvent } from "./events";
 
 const backlogs: {[project: string]: IPromise<BacklogConfiguration>} = {};
 export function getConfiguration(project: string): IPromise<BacklogConfiguration> {
@@ -25,7 +26,11 @@ export async function getState(project: string, witName: string, metaState: Meta
 
 export async function getMetaState(project: string, witName: string, state: string): Promise<MetaState> {
     const config = await getConfiguration(project);
-    const [{states}] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
+    const [stateInfo] = config.workItemTypeMappedStates.filter((s) => s.workItemTypeName === witName);
+    if (!stateInfo) {
+        trackEvent("missingStateInfo", {witName, state, states: JSON.stringify(config.workItemTypeMappedStates)});
+    }
+    const {states} = stateInfo;
     return states[state] as MetaState;
 }
 
