@@ -5,3 +5,4 @@ export const titleField = "System.Title";
 export const areaField = "System.AreaPath";
 export const iterationField = "System.IterationPath";
 export const stackField = "Microsoft.VSTS.Common.StackRank";
+export const assignedTo = "System.AssignedTo";

@@ -7,7 +7,7 @@ import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState }
 import { IWorkItemLink } from "./components/IWorkItemLink";
 import { getStatus, renderLinks, setError, setStatus } from "./components/showLinks";
 import { IProperties, trackEvent } from "./events";
-import { areaField, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
+import { areaField, assignedTo, iterationField, projField, stateField, titleField, witField } from "./fieldConstants";
 import { getRelationTypes, IRelationLookup } from "./relationTypes";
 import { getWit } from "./workItemTypes";
 
@@ -162,17 +162,17 @@ export async function createChildWi(trigger: string, childTitle: string) {
     tryExecute(async () => {
         trackEvent("create", {type: "child", trigger, ...getProps()});
         const service = await WorkItemFormService.getService();
-        const {
-            [witField]: wit,
-            [projField]: project,
-            [areaField]: area,
-            [iterationField]: iteration,
-        } = await service.getFieldValues([
+        const fields = await service.getFieldValues([
             witField,
             projField,
             areaField,
             iterationField,
         ]);
+
+        const wit = fields[witField] as string;
+        const project = fields[projField] as string;
+        const area = fields[areaField] as string;
+        const iteration = fields[iterationField] as string;
         const orderField = await getOrderFieldName(project);
         const parentRank = await service.getFieldValue(orderField) as number;
         const childWitName = await getChildWitName(project, wit);
@@ -204,6 +204,11 @@ export async function createChildWi(trigger: string, childTitle: string) {
             } as JsonPatchOperation,
             {
                 op: Operation.Add,
+                path: `/fields/${assignedTo}`,
+                value: (await service.getFieldValue(assignedTo)) as string,
+            } as JsonPatchDocument,
+            {
+                op: Operation.Add,
                 path: "/relations/-",
                 value: {
                     rel: "System.LinkTypes.Hierarchy-Reverse",
@@ -213,7 +218,7 @@ export async function createChildWi(trigger: string, childTitle: string) {
                     },
                 },
             } as JsonPatchOperation,
-        ];
+        ] as JsonPatchDocument & JsonPatchOperation[];
         setStatus("Creating work item...");
         const child = await getClient().createWorkItem(patch, project, childWitName);
         rels.push({url: child.url, rel: "System.LinkTypes.Hierarchy-Forward"} as WorkItemRelation);
