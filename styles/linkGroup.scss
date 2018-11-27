@@ -1,3 +1,4 @@
+@import "colors";
 .info {
     float: right;
     &:not(:hover):not(:focus) .callout {
@@ -5,8 +6,8 @@
     }
     .callout {
         font-family: "-apple-system",BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Ubuntu,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-        color: black;
-        border: solid 2px #eaeaea;
+        @include color(palette-neutral-100);
+        @include border(solid, 2px, palette-neutral-8);
         text-align: center;
         position: absolute;
         z-index: 1;
@@ -15,7 +16,7 @@
         width: 350px;
         max-width: 100%;
         margin-left: -100px;
-        background-color: white;
+        @include background-color(palette-neutral-0);
         padding: 8px;
         .message {
             margin-bottom: 10px;
@@ -24,10 +25,10 @@
 }
 .link, .add-button {
     &:focus {
-        background-color: aliceblue;
+        @include background-color(palette-primary-tint-40);
     }
     &:hover {
-        outline: 1px solid black;
+        @include outline(solid, 1px, palette-neutral-100);
     }
 }
 .main-content {
@@ -51,11 +52,11 @@
                     display: inline-block;
                     font-size: 14px;
                     a {
-                        color: black;
+                        @include color(palette-neutral-100);
                     }
                     &.Completed a {
                         text-decoration: line-through;
-                        color: #999;
+                        @include color(palette-neutral-60);
                     }
                     .wi-icon {
                         height: 16px;
@@ -83,6 +84,6 @@
         }
     }
     .error-message {
-        color: red;
+        @include color(palette-accent1);
     }
 }
