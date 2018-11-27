@@ -56,7 +56,7 @@
                     }
                     &.Completed a {
                         text-decoration: line-through;
-                        @include color(palette-neutral-60);
+                        @include color(palette-neutral-30);
                     }
                     .wi-icon {
                         height: 16px;
@@ -67,6 +67,10 @@
                 .link-edit {
                     width: 100%;
                     margin: 0px;
+                    input {
+                        @include background-color(palette-neutral-0);
+                        @include color(palette-neutral-100);
+                    }
                 }
             }
             &:not(:hover) .link-options {
@@ -81,9 +85,30 @@
         }
         .add-button {
             margin-top: 2px;
+            .ms-Button-label {
+                @include color(palette-neutral-100);
+            }
+        }
+        .add-title input {
+            @include background-color(palette-neutral-0);
+            @include color(palette-neutral-100);
         }
     }
     .error-message {
         @include color(palette-accent1);
+    }
+}
+
+.ms-Callout .ms-ContextualMenu-list .ms-ContextualMenu-item button {
+    @include background-color(palette-neutral-0);
+    @include color(palette-neutral-100);
+    &:hover:not([disabled]) {
+        @include background-color(palette-neutral-4);
+    }
+    &:focus {
+        @include background-color(palette-neutral-4);
+    }
+    .ms-Icon {
+        @include color(palette-primary);
     }
 }
