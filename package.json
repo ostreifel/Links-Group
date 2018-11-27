@@ -13,6 +13,7 @@
     "@types/requirejs": "^2.1.28",
     "del": "^3.0.0",
     "gulp": "^4.0.0",
+    "gulp-inline-source": "^4.0.0",
     "gulp-sass": "^4.0.2",
     "gulp-tslint": "^8.1.1",
     "office-ui-fabric-react": "^4.5.0",
