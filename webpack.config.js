@@ -22,6 +22,7 @@ module.exports = {
         // alias: { "office-ui-fabric-react": path.join(process.cwd(), 'node_modules', 'office-ui-fabric-react', 'lib-amd') },
         extensions: [".ts", ".tsx", ".js"],
     },
+    devtool: "source-map",
     module: {
       rules: [
         // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`

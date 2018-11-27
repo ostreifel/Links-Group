@@ -1,54 +1,41 @@
 
 const path = require("path");
 const gulp = require('gulp');
-const ts = require("gulp-typescript");
-const clean = require("gulp-clean");
 const yargs = require("yargs");
-const {execSync, exec} = require('child_process');
-const rename = require('gulp-rename');
+const {execSync} = require('child_process');
 const sass = require('gulp-sass');
 const tslint = require('gulp-tslint');
-const webpack = require('gulp-webpack');
-
-const args =  yargs.argv;
+const del = require("del");
 
 const distFolder = 'dist';
 
-const tsProject = ts.createProject('tsconfig.json', {
-    typescript: require('typescript')
-});
-gulp.task('clean', () => {
-    return gulp.src([distFolder, '*.vsix'])
-        .pipe(clean());
-});
-
-gulp.task('tslint', () => {
+gulp.task('clean', gulp.series(() => {
+    return del([distFolder, '*.vsix']);
+}));
+gulp.task('tslint', gulp.series(() => {
     return gulp.src(["scripts/**/*ts", "scripts/**/*tsx"])
         .pipe(tslint({
             formatter: "verbose"
         }))
         .pipe(tslint.report());
-});
-gulp.task('styles', ['clean', 'tslint'], () => {
+}));
+gulp.task('styles', gulp.series(() => {
     return gulp.src("styles/**/*scss")
         .pipe(sass())
         .pipe(gulp.dest(distFolder));
-});
-
-gulp.task('build', ['styles'], () => {
-    execSync(`webpack --devtool source-map`, {
+}));
+gulp.task('webpack', gulp.series(async () => {
+    const option = yargs.argv.release ? "-p" : "-d";
+    execSync(`node ./node_modules/webpack-cli/bin/cli.js ${option}`, {
         stdio: [null, process.stdout, process.stderr]
     });
-    // return webpack(require('./webpack.config.js'));
-});
-
-
-gulp.task('copy', ['build'], () => {
-    gulp.src('node_modules/vss-web-extension-sdk/lib/VSS.SDK.min.js')
+}));
+gulp.task('copy', gulp.series(() => {
+    return gulp.src('node_modules/vss-web-extension-sdk/lib/VSS.SDK.min.js')
         .pipe(gulp.dest(distFolder));
-});
-
-gulp.task('package', ['copy'], () => {
+}));
+gulp.task('build', gulp.parallel('copy', 'webpack', 'styles', 'tslint'));
+gulp.task('package', gulp.series('clean', 'build', async () => {
     const overrides = {}
     if (yargs.argv.release) {
         overrides.public = true;
@@ -60,7 +47,7 @@ gulp.task('package', ['copy'], () => {
     const overridesArg = `--override "${JSON.stringify(overrides).replace(/"/g, '\\"')}"`;
     const manifestsArg = `--manifests vss-extension.json`;
 
-    exec(`tfx extension create ${overridesArg} ${manifestsArg} --rev-version`,
+    execSync(`tfx extension create ${overridesArg} ${manifestsArg} --rev-version`,
         (err, stdout, stderr) => {
             if (err) {
                 console.log(err);
@@ -71,6 +58,6 @@ gulp.task('package', ['copy'], () => {
             
         });
 
-});
+}));
 
-gulp.task('default', ['package']);
+gulp.task('default', gulp.series('package'));

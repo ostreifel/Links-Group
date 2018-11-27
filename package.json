@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "postinstall": "npm run package-dev",
+    "package-dev": "node ./node_modules/gulp/bin/gulp.js",
+    "package-release": "node ./node_modules/gulp/bin/gulp.js --release"
+  },
   "devDependencies": {
     "@types/applicationinsights-js": "^1.0.5",
     "@types/jquery": "^2.0.41",
@@ -6,20 +11,18 @@
     "@types/react": "^16.0.40",
     "@types/react-dom": "^16.0.4",
     "@types/requirejs": "^2.1.28",
+    "del": "^3.0.0",
     "gulp": "^4.0.0",
-    "gulp-clean": "^0.3.2",
-    "gulp-rename": "^1.2.2",
     "gulp-sass": "^4.0.2",
     "gulp-tslint": "^8.1.1",
-    "gulp-typescript": "^3.1.6",
-    "gulp-webpack": "^1.5.0",
     "office-ui-fabric-react": "^4.5.0",
     "requirejs": "^2.3.2",
     "ts-loader": "^4.1.0",
     "tslint": "^5.4.3",
-    "typescript": "^2.8.3",
+    "typescript": "^3.1.6",
     "vss-web-extension-sdk": "^5.134.0",
-    "webpack": "^2.7.0"
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
   },
   "name": "task-group",
   "private": true,
