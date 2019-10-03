@@ -37,15 +37,20 @@ export async function getChildWitName(project: string, witName: string): Promise
     const config = await getConfiguration(project);
     const levels = [config.requirementBacklog, config.taskBacklog, ...config.portfolioBacklogs].filter((a) => !!a);
     levels.sort((a, b) => b.rank - a.rank);
+    // Default child to bottom type in the case when in the bottom backlog (ex: task)
+    const defaultWorkItemType = levels[levels.length - 1].defaultWorkItemType.name;
 
-    const [{rank}] = levels.filter((lvl) => lvl.workItemTypes.filter(({name}) => name === witName).length > 0);
+    const [matchingLevel] = levels.filter((lvl) => lvl.workItemTypes.filter(({name}) => name === witName).length > 0);
+    if (!matchingLevel) {
+        return defaultWorkItemType;
+    }
+    const {rank} = matchingLevel;
     for (const level of levels) {
         if (level.rank < rank) {
             return level.defaultWorkItemType.name;
         }
     }
-    // Default child to bottom type in the case when in the bottom backlog (ex: task)
-    return levels[levels.length].defaultWorkItemType.name;
+    return defaultWorkItemType;
 }
 
 export async function getOrderFieldName(project: string): Promise<string> {

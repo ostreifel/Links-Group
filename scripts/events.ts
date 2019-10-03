@@ -27,7 +27,7 @@ export function trackEvent(name: string, properties?: IProperties, measurements?
     if (insights) {
         properties = {
             ...(properties || {}),
-            host: VSS.getWebContext().host.authority,
+            host: VSS.getWebContext().host.name,
         };
         insights.trackEvent(name, properties, measurements);
         flush.reset();
