@@ -204,11 +204,6 @@ export async function createChildWi(trigger: string, childTitle: string) {
             } as JsonPatchOperation,
             {
                 op: Operation.Add,
-                path: `/fields/${assignedTo}`,
-                value: (await service.getFieldValue(assignedTo)) as string,
-            } as JsonPatchDocument,
-            {
-                op: Operation.Add,
                 path: "/relations/-",
                 value: {
                     rel: "System.LinkTypes.Hierarchy-Reverse",
@@ -219,6 +214,10 @@ export async function createChildWi(trigger: string, childTitle: string) {
                 },
             } as JsonPatchOperation,
         ] as JsonPatchDocument & JsonPatchOperation[];
+        const assignee = (await service.getFieldValue(assignedTo)) as string;
+        if (assignee) {
+            patch.push({ op: Operation.Add, path: `/fields/${assignedTo}`, value: assignee } as JsonPatchOperation);
+        }
         setStatus("Creating work item...");
         const child = await getClient().createWorkItem(patch, project, childWitName);
         rels.push({url: child.url, rel: "System.LinkTypes.Hierarchy-Forward"} as WorkItemRelation);
