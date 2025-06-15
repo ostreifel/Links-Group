@@ -1,3 +1,5 @@
+@use "sass:map";
+
 @function createColor($name, $defaultR, $defaultG, $defaultB, $defaultA: 1) {
     @return (
         variable: rgba(var($name, $defaultR, $defaultG, $defaultB), $defaultA),
@@ -37,10 +39,10 @@ $colors: (
     palette-accent3-dark: createColor(--palette-accent3-dark, 220, 182, 122),       // rgb(220, 182, 122)
 );
 @function getColorLiteral($name) {
-    @return map-get(map-get($colors, $name), literal);
+    @return map.get(map.get($colors, $name), literal);
 }
 @function getColorVariable($name) {
-    @return map-get(map-get($colors, $name), variable);
+    @return map.get(map.get($colors, $name), variable);
 }
 
 @mixin color($colorName) {

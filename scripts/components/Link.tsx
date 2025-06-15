@@ -1,7 +1,6 @@
 import { IconButton } from "office-ui-fabric-react/lib/Button";
 import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
-import { autobind } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import { KeyCode } from "VSS/Utils/UI";
 import { MetaState } from "../backlogConfiguration";
@@ -38,12 +37,12 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
             className="link"
             tabIndex={0}
             data-is-focusable={true}
-            onKeyDown={this._onLinkKeyDown}
+            onKeyDown={this.onLinkKeyDown}
             draggable={true}
             ref={(linkRef) => this.linkRef = linkRef}
         >
             <Checkbox
-                onChange={(e) => this._toggleWiState(e.type)}
+                onChange={(e) => this.toggleWiState(e.type)}
                 ariaLabel="Completed"
                 checked={metastate === "Completed"}
                 className="checkbox"
@@ -54,8 +53,8 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                 {
                     editingTitle ?
                     <TextField
-                        onBlur={this._onTitleEditBlur}
-                        onKeyDown={this._onTitleEditKeyDown}
+                        onBlur={this.onTitleEditBlur}
+                        onKeyDown={this.onTitleEditKeyDown}
                         value={wi.fields[titleField]}
                         className="link-edit"
                         autoFocus={true}
@@ -66,14 +65,14 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
                     >
                         {iconUrl ? <img className="wi-icon" src={iconUrl} /> : null }
                         <a
-                            href={this._getLink()}
+                            href={this.getLink()}
                             tabIndex={-1}
                             data-is-focusable={false}
                             draggable={false}
                             onClick={(e) => {
                                 const { navService } = this.props.link;
                                 trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
-                                navService.openNewWindow(this._getLink(), "");
+                                navService.openNewWindow(this.getLink(), "");
                                 e.preventDefault();
                                 e.stopPropagation();
                             }}
@@ -135,7 +134,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
             this.linkRef.focus();
         }
     }
-    private _getLink() {
+    private getLink() {
         const { wi } = this.props.link;
         const uri = VSS.getWebContext().host.uri;
         const project = wi.fields["System.TeamProject"];
@@ -143,16 +142,13 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         return wiUrl;
     }
 
-    @autobind
-    private _toggleWiState(trigger: string) {
+    private toggleWiState = (trigger: string) => {
         const { wi, metastate } = this.props.link;
-
         const altState: MetaState = metastate === "Completed" ? "Proposed" : "Completed";
         updateWiState(trigger, wi, altState);
     }
 
-    @autobind
-    private _onLinkKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    private onLinkKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.target instanceof HTMLInputElement) {
             return;
         }
@@ -161,11 +157,11 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
             e.stopPropagation();
             e.preventDefault();
             trackEvent("clickLink", {rel: this.props.link.link.rel, trigger: e.type});
-            navService.openNewWindow(this._getLink(), "");
+            navService.openNewWindow(this.getLink(), "");
         } else if (e.keyCode === KeyCode.SPACE) {
             e.stopPropagation();
             e.preventDefault();
-            this._toggleWiState(e.type);
+            this.toggleWiState(e.type);
         } else if (e.keyCode === KeyCode.DELETE) {
             e.stopPropagation();
             e.preventDefault();
@@ -189,8 +185,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         }
     }
 
-    @autobind
-    private async _onTitleEditBlur(e: React.FocusEvent<HTMLInputElement>) {
+    private onTitleEditBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
         const newTitle = e.currentTarget.value;
         const oldTitle = this.props.link.wi.fields[titleField];
         if (newTitle && newTitle !== oldTitle && this.state.editingTitle) {
@@ -199,8 +194,7 @@ export class Link extends React.Component<ILinkProps, ILinkState> {
         this.setState({editingTitle: false});
     }
 
-    @autobind
-    private async _onTitleEditKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    private onTitleEditKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.keyCode === KeyCode.ENTER && e.currentTarget.value) {
             e.stopPropagation();
             e.preventDefault();

@@ -2,7 +2,7 @@ const path = require("path");
 const gulp = require('gulp');
 const yargs = require("yargs");
 const {execSync} = require('child_process');
-const sass = require('gulp-sass')(require('sass'));
+const dartSass = require('gulp-dart-sass');
 const tslint = require('gulp-tslint');
 const del = require("del");
 const inlinesource = require('gulp-inline-source');
@@ -21,12 +21,12 @@ gulp.task('tslint', gulp.series(() => {
 }));
 gulp.task('styles', gulp.series(() => {
     return gulp.src("styles/**/*scss")
-        .pipe(sass())
+        .pipe(dartSass.sync().on('error', dartSass.logError))
         .pipe(gulp.dest(distFolder));
 }));
 gulp.task('webpack', gulp.series(async () => {
-    const option = yargs.argv.release ? "-p" : "-d";
-    execSync(`node ./node_modules/webpack-cli/bin/cli.js ${option}`, {
+    const option = yargs.argv.release ? '--mode=production' : '--mode=development';
+    execSync(`npx webpack ${option}`, {
         stdio: [null, process.stdout, process.stderr]
     });
 }));
