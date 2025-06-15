@@ -14,11 +14,12 @@
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-inline-source": "^4.0.0",
-    "gulp-sass": "^4.0.2",
+    "gulp-sass": "^5.1.0",
     "gulp-tslint": "^8.1.1",
     "office-ui-fabric-react": "^4.5.0",
     "promise-polyfill": "^8.1.0",
     "requirejs": "^2.3.2",
+    "sass": "^1.69.5",
     "ts-loader": "^4.1.0",
     "tslint": "^5.4.3",
     "typescript": "^3.1.6",
@@ -28,5 +29,8 @@
   },
   "name": "task-group",
   "private": true,
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "dependencies": {
+    "@types/jqueryui": "^1.12.3"
+  }
 }

@@ -1,9 +1,8 @@
-
 const path = require("path");
 const gulp = require('gulp');
 const yargs = require("yargs");
 const {execSync} = require('child_process');
-const sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('sass'));
 const tslint = require('gulp-tslint');
 const del = require("del");
 const inlinesource = require('gulp-inline-source');
