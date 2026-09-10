@@ -10,9 +10,17 @@ export interface ILinkProps {
 
 export class Links extends React.Component<ILinkProps, {}> {
     public render() {
-        return <div className="links">
-            {this.props.links.map((lk) => <Link link={lk} selected={this.props.selected} />)}
-            <AddLink />
-        </div>;
+        return (
+            <div className="links">
+                <AddLink />
+                {this.props.links.map((lk) => (
+                    <Link
+                        key={lk.wi.id}
+                        link={lk}
+                        selected={this.props.selected}
+                    />
+                ))}
+            </div>
+        );
     }
 }
