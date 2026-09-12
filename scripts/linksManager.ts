@@ -1,7 +1,7 @@
 import { WorkItem, WorkItemRelation } from "TFS/WorkItemTracking/Contracts";
 import { getClient } from "TFS/WorkItemTracking/RestClient";
 import { WorkItemFormService } from "TFS/WorkItemTracking/Services";
-import { HostNavigationService } from "VSS/SDK/Services/Navigation";
+// import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 import { JsonPatchDocument, JsonPatchOperation, Operation } from "VSS/WebApi/Contracts";
 import { getChildWitName, getMetaState, getOrderFieldName, getState, MetaState } from "./backlogConfiguration";
 import { IWorkItemLink } from "./components/IWorkItemLink";
@@ -16,22 +16,47 @@ let rels: WorkItemRelation[] = [];
 let wis: {[id: number]: WorkItem} = {};
 let selected = -1;
 
+function normalizeBaseUrl(url: string): string {
+    return (url || "").replace(/\/+$/, "").toLowerCase();
+}
+
+function isLocalWorkItemUrl(url: string): boolean {
+    const localBase = normalizeBaseUrl(VSS.getWebContext().host.uri);
+    const targetUrl = normalizeBaseUrl(url);
+
+    return !!targetUrl && targetUrl.startsWith(localBase + "/");
+}
+
 function wiIdFromUrl(url: string): number {
-    const match = url.match(/workitems\/(\d+)$/i);
+    if (!url || !isLocalWorkItemUrl(url)) {
+        return -1;
+    }
+
+    const match = url.match(/workitems\/(\d+)(?:$|[/?#])/i);
     return match ? Number(match[1]) : -1;
 }
 
 function getLinkType(types: IRelationLookup, name: string) {
-    return types[name] || types[name.replace(/-Forward$|-Reverse$/, "")];
+    if (!name) {
+        return null;
+    }
+
+    return types[name] || types[name.replace(/-Forward$|-Reverse$/, "")] || null;
 }
 
 async function linkedWiIds() {
     const relTypes = await getRelationTypes();
-    return rels.filter(
-        (rel) => getLinkType(relTypes, rel.rel).attributes.usage === "workItemLink",
-    ).map(
-        ({url}) => wiIdFromUrl(url),
-    );
+
+    return rels
+        .filter((rel) => {
+            const linkType = getLinkType(relTypes, rel.rel);
+
+            return !!linkType
+                && !!linkType.attributes
+                && linkType.attributes.usage === "workItemLink"
+                && wiIdFromUrl(rel.url) > 0;
+        })
+        .map(({url}) => wiIdFromUrl(url));
 }
 
 async function tryExecute(callback: () => Promise<void>) {
@@ -161,6 +186,7 @@ export async function moveLink(trigger: string, link: IWorkItemLink, dir: "up" |
 export async function createChildWi(trigger: string, childTitle: string) {
     tryExecute(async () => {
         trackEvent("create", {type: "child", trigger, ...getProps()});
+
         const service = await WorkItemFormService.getService();
         const fields = await service.getFieldValues([
             witField,
@@ -173,15 +199,23 @@ export async function createChildWi(trigger: string, childTitle: string) {
         const project = fields[projField] as string;
         const area = fields[areaField] as string;
         const iteration = fields[iterationField] as string;
-        const orderField = await getOrderFieldName(project);
-        const parentRank = await service.getFieldValue(orderField) as number;
-        const childWitName = await getChildWitName(project, wit);
-        const ranks = [parentRank];
-        for (const id in wis) {
-            ranks.push(wis[id].fields[orderField] as number);
+        const parentId = await service.getId();
+
+        if (!project) {
+            throw new Error("Could not determine current project.");
         }
-        ranks.sort((a, b) => b - a); // largest first
-        const patch: JsonPatchDocument & JsonPatchOperation[] = [
+
+        if (!wit) {
+            throw new Error("Could not determine current work item type.");
+        }
+
+        if (!parentId) {
+            throw new Error("Please save the current work item before adding a child.");
+        }
+
+        const childWitName = await getChildWitName(project, wit);
+
+        const patch = [
             {
                 op: Operation.Add,
                 path: `/fields/${titleField}`,
@@ -189,42 +223,78 @@ export async function createChildWi(trigger: string, childTitle: string) {
             } as JsonPatchOperation,
             {
                 op: Operation.Add,
-                path: `/fields/${areaField}`,
-                value: area,
-            } as JsonPatchOperation,
-            {
-                op: Operation.Add,
-                path: `/fields/${iterationField}`,
-                value: iteration,
-            } as JsonPatchOperation,
-            {
-                op: Operation.Add,
-                path: `/fields/${orderField}`,
-                value: ranks[0] + 1,
-            } as JsonPatchOperation,
-            {
-                op: Operation.Add,
                 path: "/relations/-",
                 value: {
                     rel: "System.LinkTypes.Hierarchy-Reverse",
-                    url: await service.getWorkItemResourceUrl(await service.getId()),
+                    url: await service.getWorkItemResourceUrl(parentId),
                     attributes: {
                         comment: "Created from the Links Group extension",
                     },
                 },
             } as JsonPatchOperation,
         ] as JsonPatchDocument & JsonPatchOperation[];
-        const assignee = (await service.getFieldValue(assignedTo)) as string;
-        if (assignee) {
-            patch.push({ op: Operation.Add, path: `/fields/${assignedTo}`, value: assignee } as JsonPatchOperation);
+
+        if (area) {
+            patch.push({
+                op: Operation.Add,
+                path: `/fields/${areaField}`,
+                value: area,
+            } as JsonPatchOperation);
         }
+
+        if (iteration) {
+            patch.push({
+                op: Operation.Add,
+                path: `/fields/${iterationField}`,
+                value: iteration,
+            } as JsonPatchOperation);
+        }
+
+        try {
+            const orderField = await getOrderFieldName(project);
+            const parentRank = await service.getFieldValue(orderField) as number;
+
+            const ranks: number[] = [];
+            if (typeof parentRank === "number" && !isNaN(parentRank)) {
+                ranks.push(parentRank);
+            }
+
+            for (const id in wis) {
+                const rank = wis[id].fields[orderField] as number;
+                if (typeof rank === "number" && !isNaN(rank)) {
+                    ranks.push(rank);
+                }
+            }
+
+            if (ranks.length > 0) {
+                ranks.sort((a, b) => b - a);
+                patch.push({
+                    op: Operation.Add,
+                    path: `/fields/${orderField}`,
+                    value: ranks[0] + 1,
+                } as JsonPatchOperation);
+            }
+        } catch (error) {
+            // ignore missing backlog/order configuration
+        }
+
+        const assignee = await service.getFieldValue(assignedTo);
+        if (assignee) {
+            patch.push({
+                op: Operation.Add,
+                path: `/fields/${assignedTo}`,
+                value: assignee,
+            } as JsonPatchOperation);
+        }
+
         setStatus("Creating work item...");
         const child = await getClient().createWorkItem(patch, project, childWitName);
+
         rels.push({url: child.url, rel: "System.LinkTypes.Hierarchy-Forward"} as WorkItemRelation);
         wis[child.id] = child;
         selected = child.id;
+
         await update();
-        // await service.refresh();
     });
 }
 
@@ -263,29 +333,55 @@ export async function unlink(trigger: string, link: IWorkItemLink) {
 
 async function update() {
     setStatus("");
-    const navService = await VSS.getService<HostNavigationService>(VSS.ServiceIds.Navigation);
+
+    const navService: any = await VSS.getService(VSS.ServiceIds.Navigation);
     const relTypes = await getRelationTypes();
-    const links: IWorkItemLink[] = (await Promise.all(rels.map(async (rel): Promise<IWorkItemLink> => {
-        const linkType = getLinkType(relTypes, rel.rel);
-        if (!linkType || linkType.attributes.usage !== "workItemLink") {
-            return null;
-        }
-        const wi = wis[wiIdFromUrl(rel.url)];
-        const metastate = await getMetaState(wi.fields[projField], wi.fields[witField], wi.fields[stateField]);
-        if (!metastate) {
-            return null;
-        }
-        return {
-            wi,
-            link: rel,
-            relationType: linkType,
-            metastate,
-            navService,
-            workItemType: await getWit(wi.fields[projField], wi.fields[witField]),
-        };
-    }))).filter((rel) => rel);
+
+    const links: IWorkItemLink[] = (await Promise.all(
+        rels.map(async (rel): Promise<IWorkItemLink | null> => {
+            const linkType = getLinkType(relTypes, rel.rel);
+
+            if (!linkType || !linkType.attributes || linkType.attributes.usage !== "workItemLink") {
+                return null;
+            }
+
+            const wiId = wiIdFromUrl(rel.url);
+            if (wiId <= 0) {
+                return null;
+            }
+
+            const wi = wis[wiId];
+            if (!wi || !wi.fields) {
+                return null;
+            }
+
+            const wiProject = wi.fields[projField];
+            const workItemTypeName = wi.fields[witField];
+            const state = wi.fields[stateField];
+
+            if (!wiProject || !workItemTypeName || !state) {
+                return null;
+            }
+
+            const metastate = await getMetaState(wiProject, workItemTypeName, state);
+            if (!metastate) {
+                return null;
+            }
+
+            return {
+                wi,
+                link: rel,
+                relationType: linkType,
+                metastate,
+                navService,
+                workItemType: await getWit(wiProject, workItemTypeName),
+            };
+        }),
+    )).filter((rel): rel is IWorkItemLink => !!rel);
+
     const formService = await WorkItemFormService.getService();
     const project = await formService.getFieldValue(projField) as string;
+
     links.sort(await getRelationComparer(project));
     await renderLinks({links, selected});
 }
